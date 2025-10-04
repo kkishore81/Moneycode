@@ -2,7 +2,8 @@ import { GoogleGenAI } from "@google/genai";
 // Fix: Corrected import path for types.
 import { Transaction, FinancialSummary } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+// Fix: Per coding guidelines, API key must be read from process.env.API_KEY.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export async function getFinancialAdvice(
     prompt: string,
