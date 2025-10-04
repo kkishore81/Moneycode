@@ -1,9 +1,15 @@
 import { GoogleGenAI } from "@google/genai";
-// Fix: Corrected import path for types.
 import { Transaction, FinancialSummary } from '../types';
 
-// Fix: Per coding guidelines, API key must be read from process.env.API_KEY.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// This is the correct way to access environment variables in a Vite project.
+// VITE_ is a required prefix for Vite to expose the variable to the browser.
+const apiKey = import.meta.env.VITE_API_KEY;
+
+if (!apiKey) {
+    throw new Error("VITE_API_KEY is not defined. Please set it in your .env file or Vercel environment variables.");
+}
+
+const ai = new GoogleGenAI({ apiKey });
 
 export async function getFinancialAdvice(
     prompt: string,
@@ -18,7 +24,7 @@ export async function getFinancialAdvice(
         - Monthly Expenses: ₹${summary.monthlyExpenses.toFixed(2)}
 
         Recent Transactions:
-        ${transactions.slice(0, 15).map(t => `- ${t.date}: ${t.description} (${t.category}) - ₹${t.amount.toFixed(2)} [${t.type}]`).join('\n')}
+        ${transactions.slice(0, 15).map(t => `- ${new Date(t.date).toLocaleDateString('en-IN')}: ${t.description} (${t.category}) - ₹${t.amount.toFixed(2)} [${t.type}]`).join('\n')}
     `;
 
     const fullPrompt = `
