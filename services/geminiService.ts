@@ -1,14 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 import { Transaction, FinancialSummary } from '../types';
 
-// This is the correct way to access environment variables in a Vite project.
-// VITE_ is a required prefix for Vite to expose the variable to the browser.
-const apiKey = import.meta.env.VITE_API_KEY;
-
+// Fix: Use process.env.API_KEY as per the coding guidelines.
+const apiKey = process.env.API_KEY;
 if (!apiKey) {
-    throw new Error("VITE_API_KEY is not defined. Please set it in your .env file or Vercel environment variables.");
+  throw new Error("API_KEY is not set in the environment variables.");
 }
-
 const ai = new GoogleGenAI({ apiKey });
 
 export async function getFinancialAdvice(
