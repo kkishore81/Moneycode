@@ -9,7 +9,7 @@ export enum TransactionCategory {
   TRANSPORT = 'Transport',
   SHOPPING = 'Shopping',
   BILLS = 'Bills',
-  ENTERTAINMENT = 'Entertainment',
+  ENTERTAINTAINMENT = 'Entertainment',
   HEALTH = 'Health',
   HOUSING = 'Housing',
   SALARY = 'Salary',
@@ -109,24 +109,6 @@ export interface Loan {
     assetCurrentValue?: number;
 }
 
-// Fix: Add missing FinancialDocument and DocumentType types for the Document Vault feature.
-// Document Vault
-export enum DocumentType {
-    PDF = 'PDF',
-    IMAGE = 'Image',
-    WORD = 'Word Document',
-    SPREADSHEET = 'Spreadsheet',
-    OTHER = 'Other',
-}
-
-export interface FinancialDocument {
-    id: string;
-    name: string;
-    type: DocumentType;
-    uploadDate: string; // ISO string
-}
-
-
 // Will Creator
 export interface WillPersonalInfo {
     fullName: string;
@@ -157,4 +139,20 @@ export interface Beneficiary {
 export interface Guardian {
     fullName: string;
     relationship: string;
+}
+// Fix: Added missing types for Document Vault feature.
+// Document Vault
+export enum DocumentType {
+    PDF = 'PDF',
+    JPG = 'JPEG Image',
+    PNG = 'PNG Image',
+    DOCX = 'Word Document',
+    OTHER = 'Other',
+}
+
+export interface FinancialDocument {
+    id: string;
+    name: string;
+    type: DocumentType;
+    uploadDate: string; // ISO string
 }

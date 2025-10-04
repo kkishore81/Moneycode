@@ -1,19 +1,14 @@
 import { GoogleGenAI } from "@google/genai";
 import { Transaction, FinancialSummary } from '../types';
 
-// Fix: Use process.env.API_KEY as per the coding guidelines.
-const apiKey = process.env.API_KEY;
-if (!apiKey) {
-  throw new Error("API_KEY is not set in the environment variables.");
-}
-const ai = new GoogleGenAI({ apiKey });
+// Fix: Switched from Vite-specific import.meta.env to process.env.API_KEY and initialized directly as per guidelines.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export async function getFinancialAdvice(
     prompt: string,
     transactions: Transaction[],
     summary: FinancialSummary
 ): Promise<string> {
-
     const financialDataContext = `
         Here is a summary of the user's financial data for the current month:
         - Total Balance: ₹${summary.totalBalance.toFixed(2)}
