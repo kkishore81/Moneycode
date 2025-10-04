@@ -9,7 +9,8 @@ export enum TransactionCategory {
   TRANSPORT = 'Transport',
   SHOPPING = 'Shopping',
   BILLS = 'Bills',
-  ENTERTAINTAINMENT = 'Entertainment',
+  // Fix: Corrected typo 'ENTERTAINTAINMENT' to 'ENTERTAINMENT'.
+  ENTERTAINMENT = 'Entertainment',
   HEALTH = 'Health',
   HOUSING = 'Housing',
   SALARY = 'Salary',
@@ -140,13 +141,13 @@ export interface Guardian {
     fullName: string;
     relationship: string;
 }
+
 // Fix: Added missing types for Document Vault feature.
 // Document Vault
 export enum DocumentType {
     PDF = 'PDF',
-    JPG = 'JPEG Image',
-    PNG = 'PNG Image',
-    DOCX = 'Word Document',
+    IMAGE = 'Image',
+    WORD = 'Word Document',
     OTHER = 'Other',
 }
 

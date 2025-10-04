@@ -1,8 +1,14 @@
 import { GoogleGenAI } from "@google/genai";
 import { Transaction, FinancialSummary } from '../types';
 
-// Fix: Switched from Vite-specific import.meta.env to process.env.API_KEY and initialized directly as per guidelines.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Fix: Use process.env.API_KEY as per guidelines and to resolve TypeScript error.
+const apiKey = process.env.API_KEY;
+if (!apiKey) {
+    // Fix: Updated error message to match the environment variable name.
+    throw new Error("API_KEY is not set in the environment variables. Please add it to your .env file for local development or in your hosting provider's settings.");
+}
+
+const ai = new GoogleGenAI({ apiKey });
 
 export async function getFinancialAdvice(
     prompt: string,
