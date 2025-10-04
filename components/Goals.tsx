@@ -4,22 +4,21 @@ import { Modal } from './Modal';
 
 interface GoalsProps {
     goals: Goal[];
-    onAddGoal: (goal: Omit<Goal, 'id'>) => void;
-    onUpdateGoal: (goal: Goal) => void;
+    onAddGoal: (goal: Omit<Goal, 'id' | 'currentAmount'>) => void;
+    onUpdateGoal: (goal: Omit<Goal, 'currentAmount'>) => void;
     onDeleteGoal: (goalId: string) => void;
 }
 
-const initialFormState: Omit<Goal, 'id'> = {
+const initialFormState: Omit<Goal, 'id' | 'currentAmount'> = {
     name: '',
     targetAmount: 0,
-    currentAmount: 0,
     deadline: '',
 };
 
 export const Goals: React.FC<GoalsProps> = ({ goals, onAddGoal, onUpdateGoal, onDeleteGoal }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [formState, setFormState] = useState<Omit<Goal, 'id'> & { id?: string }>(initialFormState);
+    const [formState, setFormState] = useState<Omit<Goal, 'id' | 'currentAmount'> & { id?: string }>(initialFormState);
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
     const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
@@ -34,7 +33,9 @@ export const Goals: React.FC<GoalsProps> = ({ goals, onAddGoal, onUpdateGoal, on
     const openEditModal = (goal: Goal) => {
         setIsEditing(true);
         setFormState({
-            ...goal,
+            id: goal.id,
+            name: goal.name,
+            targetAmount: goal.targetAmount,
             deadline: formatDate(goal.deadline),
         });
         setIsModalOpen(true);
@@ -58,7 +59,6 @@ export const Goals: React.FC<GoalsProps> = ({ goals, onAddGoal, onUpdateGoal, on
         const goalData = {
             name: formState.name,
             targetAmount: formState.targetAmount,
-            currentAmount: formState.currentAmount,
             deadline: new Date(formState.deadline).toISOString(),
         };
         
@@ -124,7 +124,6 @@ export const Goals: React.FC<GoalsProps> = ({ goals, onAddGoal, onUpdateGoal, on
                 <div className="space-y-4">
                     <input type="text" name="name" value={formState.name} onChange={handleInputChange} placeholder="Goal Name (e.g., New Car)" className="w-full bg-gray-700 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:outline-none" />
                     <input type="number" name="targetAmount" value={formState.targetAmount} onChange={handleInputChange} placeholder="Target Amount (₹)" className="w-full bg-gray-700 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:outline-none" />
-                    <input type="number" name="currentAmount" value={formState.currentAmount} onChange={handleInputChange} placeholder="Current Amount Saved (₹)" className="w-full bg-gray-700 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:outline-none" />
                     <input type="date" name="deadline" value={formState.deadline} onChange={handleInputChange} className="w-full bg-gray-700 text-white border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-green-500 focus:outline-none" />
                 </div>
                 <div className="flex justify-end space-x-2 mt-6">

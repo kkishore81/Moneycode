@@ -1,10 +1,12 @@
 import { GoogleGenAI } from "@google/genai";
 import { Transaction, FinancialSummary } from '../types';
 
-const apiKey = import.meta.env.VITE_API_KEY;
+// Fix: Per coding guidelines, API key must be read from process.env.API_KEY.
+const apiKey = process.env.API_KEY;
 
 if (!apiKey) {
-    throw new Error("VITE_API_KEY is not set in the environment. Please set it in your .env file for local development or in Vercel environment variables for deployment.");
+    // Fix: Updated error message to reflect the new API key source.
+    throw new Error("API_KEY is not set in the environment. Please ensure it is configured.");
 }
 
 const ai = new GoogleGenAI({ apiKey });

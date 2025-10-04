@@ -1,4 +1,7 @@
-import React, { useState, useMemo } from 'react';
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { Auth } from './components/Auth';
+import { Verification } from './Verification';
 import { Header } from './components/Header';
 import { Navbar, View } from './components/Navbar';
 import { Dashboard } from './components/Dashboard';
@@ -6,65 +9,15 @@ import { Budget } from './components/Budget';
 import { Goals } from './components/Goals';
 import { Investments } from './components/Investments';
 import { Insurance } from './components/Insurance';
+import { Loans } from './components/Loans';
 import { Calculators } from './components/Calculators';
 import { WillCreator } from './components/WillCreator';
-import { Loans } from './components/Loans';
-import { Auth } from './components/Auth';
-import { Budgets, Goal, InsurancePolicy, TransactionCategory, InsuranceType, Loan, LoanType, Transaction, TransactionType, FinancialSummary } from './types';
-
-// Mock Data generation
-const generateMockTransactions = (): Transaction[] => {
-  const transactions: Transaction[] = [];
-  const today = new Date();
-  
-  // Salary
-  transactions.push({
-    id: 't1',
-    date: new Date(today.getFullYear(), today.getMonth(), 1).toISOString(),
-    description: 'Monthly Salary',
-    amount: 75000,
-    type: TransactionType.INCOME,
-    category: TransactionCategory.SALARY
-  });
-
-  // Expenses
-  const expenses = [
-    { desc: 'Grocery Store', cat: TransactionCategory.FOOD, amt: 5500, day: 2 },
-    { desc: 'Petrol', cat: TransactionCategory.TRANSPORT, amt: 3000, day: 3 },
-    { desc: 'Online Shopping', cat: TransactionCategory.SHOPPING, amt: 8250, day: 4 },
-  ];
-  
-  expenses.forEach((exp, index) => {
-    transactions.push({
-      id: `t-exp-${index + 1}`,
-      date: new Date(today.getFullYear(), today.getMonth(), exp.day).toISOString(),
-      description: exp.desc,
-      amount: exp.amt,
-      type: TransactionType.EXPENSE,
-      category: exp.cat,
-    });
-  });
-
-  return transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-};
+import { Transaction, TransactionType, TransactionCategory, Budgets, Goal, InsurancePolicy, InsuranceType, Loan, LoanType, Investment, InvestmentType, InvestmentWithPerformance } from './types';
+import { calculateXIRR } from './utils/xirr';
+import { calculateFdValue, calculateRdValue } from './utils/investmentCalculators';
 
 
-// Mock Data for other features
-const mockGoals: Goal[] = [
-    { id: 'g1', name: 'Vacation to Europe', targetAmount: 200000, currentAmount: 75000, deadline: new Date('2025-06-01').toISOString() },
-    { id: 'g2', name: 'Downpayment for Car', targetAmount: 300000, currentAmount: 180000, deadline: new Date('2024-12-31').toISOString() },
-];
-const mockBudgets: Budgets = {
-    [TransactionCategory.FOOD]: 15000,
-    [TransactionCategory.SHOPPING]: 10000,
-};
-const mockPolicies: InsurancePolicy[] = [
-    { id: 'p1', policyName: 'LIC Jeevan Anand', type: InsuranceType.LIFE, sumAssured: 1000000, premiumAmount: 25000, premiumDueDate: new Date(new Date().getFullYear(), new Date().getMonth(), 28).toISOString(), issueDate: new Date('2020-05-10').toISOString(), expiryDate: new Date('2040-05-09').toISOString() },
-];
-const mockLoans: Loan[] = [
-    { id: 'l1', name: 'HDFC Home Loan', type: LoanType.HOME, principal: 5000000, outstandingAmount: 4200000, interestRate: 8.5, tenure: 20, emi: 43391, startDate: new Date('2021-08-15').toISOString(), assetCurrentValue: 6500000 },
-];
-
+// Define this type since it's used in CustomizeDashboardModal
 export interface DashboardWidgetSettings {
     summaryCards: boolean;
     cashFlowChart: boolean;
@@ -73,139 +26,158 @@ export interface DashboardWidgetSettings {
     aiAdvisor: boolean;
 }
 
+const simpleId = () => Math.random().toString(36).substring(2, 9);
+
+// Mock Data Inlined
+const mockData = {
+    transactions: [
+        { id: simpleId(), date: new Date(2023, 10, 1).toISOString(), amount: 50000, description: 'Monthly Salary', type: TransactionType.INCOME, category: TransactionCategory.SALARY },
+        { id: simpleId(), date: new Date(2023, 10, 2).toISOString(), amount: 2500, description: 'Groceries', type: TransactionType.EXPENSE, category: TransactionCategory.FOOD },
+        { id: simpleId(), date: new Date(2023, 10, 5).toISOString(), amount: 5000, description: 'Rent', type: TransactionType.EXPENSE, category: TransactionCategory.HOUSING },
+        // Investment transactions
+        { id: simpleId(), date: new Date(2023, 0, 15).toISOString(), amount: 100000, description: 'Initial FD Investment', type: TransactionType.EXPENSE, category: TransactionCategory.INVESTMENT, investmentId: 'fd1' },
+        { id: simpleId(), date: new Date(2023, 6, 5).toISOString(), amount: 5000, description: 'Monthly RD Installment', type: TransactionType.EXPENSE, category: TransactionCategory.INVESTMENT, investmentId: 'rd1' },
+        { id: simpleId(), date: new Date(2023, 7, 5).toISOString(), amount: 5000, description: 'Monthly RD Installment', type: TransactionType.EXPENSE, category: TransactionCategory.INVESTMENT, investmentId: 'rd1' },
+    ],
+    budgets: {
+        [TransactionCategory.FOOD]: 10000,
+        [TransactionCategory.SHOPPING]: 5000,
+    },
+    goals: [
+        { id: simpleId(), name: 'Vacation to Goa', targetAmount: 50000, currentAmount: 15000, deadline: new Date(2024, 5, 1).toISOString() },
+    ],
+    insurancePolicies: [
+        { id: simpleId(), policyName: 'HDFC Life Click 2 Protect', type: InsuranceType.LIFE, sumAssured: 10000000, premiumAmount: 15000, premiumDueDate: new Date(2024, 0, 15).toISOString(), issueDate: new Date(2022, 0, 10).toISOString(), expiryDate: new Date(2052, 0, 10).toISOString() },
+    ],
+    loans: [
+        { id: simpleId(), name: 'SBI Home Loan', type: LoanType.HOME, principal: 5000000, outstandingAmount: 4800000, interestRate: 8.5, tenure: 20, emi: 43391, startDate: new Date(2022, 6, 1).toISOString(), assetCurrentValue: 6000000 },
+    ],
+    investments: [
+        { id: 'fd1', name: 'SBI Fixed Deposit', type: InvestmentType.FD, currentValue: 100000, startDate: new Date(2023, 0, 15).toISOString(), interestRate: 7.5 },
+        { id: 'rd1', name: 'ICICI Recurring Deposit', type: InvestmentType.RECURRING_DEPOSIT, currentValue: 10000, startDate: new Date(2023, 6, 5).toISOString(), interestRate: 7.0, monthlyInvestment: 5000 },
+        { id: simpleId(), name: 'Nifty 50 Index Fund', type: InvestmentType.MUTUAL_FUNDS, currentValue: 120000 },
+    ]
+};
+
+
 const App: React.FC = () => {
-    const [activeView, setActiveView] = useState<View>('dashboard');
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [needsVerification, setNeedsVerification] = useState(false);
+    const [userEmail, setUserEmail] = useState<string | null>(null);
+    const [activeView, setActiveView] = useState<View>('dashboard');
+
+    // State for all financial data
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [budgets, setBudgets] = useState<Budgets>({});
+    const [goals, setGoals] = useState<Goal[]>([]);
+    const [policies, setPolicies] = useState<InsurancePolicy[]>([]);
+    const [loans, setLoans] = useState<Loan[]>([]);
+    const [investments, setInvestments] = useState<Investment[]>([]);
     
-    // States for features
-    const [transactions, setTransactions] = useState<Transaction[]>(generateMockTransactions());
-    const [budgets, setBudgets] = useState<Budgets>(mockBudgets);
-    const [goals, setGoals] = useState<Goal[]>(mockGoals);
-    const [policies, setPolicies] = useState<InsurancePolicy[]>(mockPolicies);
-    const [loans, setLoans] = useState<Loan[]>(mockLoans);
-    const [dashboardWidgets, setDashboardWidgets] = useState<DashboardWidgetSettings>({
-        summaryCards: true,
-        cashFlowChart: true,
-        expenseChart: true,
-        transactionsList: true,
-        aiAdvisor: true,
-    });
+    // Load data from mock on mount
+    useEffect(() => {
+        setTransactions(mockData.transactions);
+        setBudgets(mockData.budgets);
+        setGoals(mockData.goals);
+        setPolicies(mockData.insurancePolicies);
+        setLoans(mockData.loans);
+        setInvestments(mockData.investments);
+    }, []);
 
-    // Derived state for financial summary
-    const summary = useMemo<FinancialSummary>(() => {
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
+    const investmentsWithPerformance = useMemo((): InvestmentWithPerformance[] => {
+        return investments.map(inv => {
+            const investmentTransactions = transactions.filter(t => t.investmentId === inv.id);
+            const totalInvested = investmentTransactions.reduce((sum, t) => sum + t.amount, 0);
+            
+            let calculatedCurrentValue = inv.currentValue;
+            if (inv.type === InvestmentType.FD && inv.startDate && inv.interestRate) {
+                calculatedCurrentValue = calculateFdValue(totalInvested, inv.interestRate, inv.startDate);
+            } else if (inv.type === InvestmentType.RECURRING_DEPOSIT && inv.startDate && inv.interestRate && inv.monthlyInvestment) {
+                calculatedCurrentValue = calculateRdValue(inv.monthlyInvestment, inv.interestRate, inv.startDate);
+            }
 
-        const monthlyIncome = transactions
-            .filter(t => {
-                const tDate = new Date(t.date);
-                return t.type === TransactionType.INCOME && tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear;
-            })
-            .reduce((sum, t) => sum + t.amount, 0);
+            const cashFlows = investmentTransactions.map(t => ({ value: -t.amount, date: new Date(t.date) }));
+            if (calculatedCurrentValue > 0) {
+                cashFlows.push({ value: calculatedCurrentValue, date: new Date() });
+            }
 
-        const monthlyExpenses = transactions
-            .filter(t => {
-                const tDate = new Date(t.date);
-                return t.type === TransactionType.EXPENSE && tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear;
-            })
-            .reduce((sum, t) => sum + t.amount, 0);
+            cashFlows.sort((a,b) => a.date.getTime() - b.date.getTime());
+            
+            const values = cashFlows.map(cf => cf.value);
+            const dates = cashFlows.map(cf => cf.date);
+            const xirr = calculateXIRR(values, dates);
 
-        const totalBalance = transactions.reduce((acc, t) => acc + (t.type === TransactionType.INCOME ? t.amount : -t.amount), 0);
+            return {
+                ...inv,
+                currentValue: calculatedCurrentValue,
+                totalInvested,
+                pnl: calculatedCurrentValue - totalInvested,
+                xirr: isNaN(xirr) ? 0 : xirr,
+            };
+        });
+    }, [investments, transactions]);
 
-        return { totalBalance, monthlyIncome, monthlyExpenses };
-    }, [transactions]);
 
+    // Auth Handlers
+    const handleLogin = () => {
+        setIsAuthenticated(true);
+        setNeedsVerification(false);
+    };
 
-    // --- Auth Handlers ---
-    const handleLogin = (email: string, pass: string) => setIsAuthenticated(true);
-    const handleSignup = (email: string, pass: string) => setIsAuthenticated(true);
-    const handleGoogleLogin = () => setIsAuthenticated(true);
-    const handleLogout = () => setIsAuthenticated(false);
+    const handleSignupRequest = (email: string) => {
+        setUserEmail(email);
+        setNeedsVerification(true);
+    };
 
-    // --- Transaction Handlers ---
-    const handleSaveTransaction = (transactionData: Omit<Transaction, 'id'> | Transaction) => {
-         if ('id' in transactionData) {
-            setTransactions(prev => prev.map(t => t.id === transactionData.id ? transactionData : t));
-        } else {
-            const newTransaction = { ...transactionData, id: `t${Date.now()}` };
-            setTransactions(prev => [...prev, newTransaction].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    const handleVerify = (code: string): boolean => {
+        if (code === '123456') { // Mock verification
+            handleLogin();
+            return true;
         }
+        return false;
     };
-     const handleDeleteTransaction = (transactionId: string) => {
-        setTransactions(prev => prev.filter(t => t.id !== transactionId));
+    
+    const handleLogout = () => {
+        setIsAuthenticated(false);
+        setUserEmail(null);
+        setNeedsVerification(false);
     };
-
-
-    // --- Other Feature Handlers ---
-    const handleSetBudget = (category: TransactionCategory, amount: number) => setBudgets(prev => ({ ...prev, [category]: amount }));
-    const handleResetBudgets = () => setBudgets({});
-    const handleAddGoal = (goal: Omit<Goal, 'id'>) => setGoals(prev => [...prev, { ...goal, id: `g${Date.now()}` }]);
-    const handleUpdateGoal = (updatedGoal: Goal) => setGoals(prev => prev.map(g => g.id === updatedGoal.id ? updatedGoal : g));
-    const handleDeleteGoal = (goalId: string) => setGoals(prev => prev.filter(g => g.id !== goalId));
-    const handleAddPolicy = (policy: Omit<InsurancePolicy, 'id'>) => setPolicies(prev => [...prev, { ...policy, id: `p${Date.now()}` }]);
-    const handleUpdatePolicy = (updatedPolicy: InsurancePolicy) => setPolicies(prev => prev.map(p => p.id === updatedPolicy.id ? updatedPolicy : p));
-    const handleDeletePolicy = (policyId: string) => setPolicies(prev => prev.filter(p => p.id !== policyId));
-    const handleSaveLoan = (loanData: Omit<Loan, 'id'> | Loan) => {
-        if ('id' in loanData) setLoans(prev => prev.map(l => l.id === loanData.id ? loanData : l));
-        else setLoans(prev => [...prev, { ...loanData, id: `l${Date.now()}` }]);
-    };
-    const handleDeleteLoan = (loanId: string) => setLoans(prev => prev.filter(l => l.id !== loanId));
-
 
     const renderContent = () => {
         switch (activeView) {
-            case 'dashboard':
-                return <Dashboard 
-                    transactions={transactions} 
-                    summary={summary}
-                    onSaveTransaction={handleSaveTransaction}
-                    onDeleteTransaction={handleDeleteTransaction}
-                    widgetSettings={dashboardWidgets}
-                    onWidgetSettingsChange={setDashboardWidgets}
-                />;
-            case 'budgets':
-                return <Budget transactions={transactions} budgets={budgets} onSetBudget={handleSetBudget} onResetBudgets={handleResetBudgets} />;
-            case 'goals':
-                return <Goals goals={goals} onAddGoal={handleAddGoal} onUpdateGoal={handleUpdateGoal} onDeleteGoal={handleDeleteGoal} />;
-            case 'investments':
-                return <Investments />;
-            case 'insurance':
-                return <Insurance policies={policies} onAddPolicy={handleAddPolicy} onUpdatePolicy={handleUpdatePolicy} onDeletePolicy={handleDeletePolicy} />;
-            case 'loans':
-                return <Loans loans={loans} onSaveLoan={handleSaveLoan} onDeleteLoan={handleDeleteLoan} />;
-            case 'calculators':
-                return <Calculators />;
-            case 'will-creator':
-                return <WillCreator />;
-            default:
-                return <Dashboard 
-                    transactions={transactions} 
-                    summary={summary}
-                    onSaveTransaction={handleSaveTransaction}
-                    onDeleteTransaction={handleDeleteTransaction}
-                    widgetSettings={dashboardWidgets}
-                    onWidgetSettingsChange={setDashboardWidgets}
-                />;
+            case 'dashboard': return <Dashboard transactions={transactions} />;
+            case 'budgets': return <Budget transactions={transactions} budgets={budgets} onSetBudget={(cat, amt) => setBudgets(b => ({...b, [cat]: amt}))} onResetBudgets={() => setBudgets({})} />;
+            case 'goals': return <Goals goals={goals} onAddGoal={() => {}} onUpdateGoal={() => {}} onDeleteGoal={() => {}} />;
+            // Fix: Pass transactions to Investments component to fix chart data calculation.
+            case 'investments': return <Investments investments={investmentsWithPerformance} transactions={transactions} onSaveInvestment={() => {}} onDeleteInvestment={() => {}} />;
+            case 'insurance': return <Insurance policies={policies} onAddPolicy={() => {}} onUpdatePolicy={() => {}} onDeletePolicy={() => {}} />;
+            case 'loans': return <Loans loans={loans} onSaveLoan={() => {}} onDeleteLoan={() => {}} />;
+            case 'calculators': return <Calculators />;
+            case 'will-creator': return <WillCreator />;
+            default: return <Dashboard transactions={transactions} />;
         }
     };
     
     if (!isAuthenticated) {
-        return <Auth onLogin={handleLogin} onSignup={handleSignup} onGoogleLogin={handleGoogleLogin} />;
+        if (needsVerification) {
+            return <Verification onVerify={handleVerify} userEmail={userEmail} />;
+        }
+        return <Auth onLogin={handleLogin} onSignupRequest={handleSignupRequest} onGoogleLogin={handleLogin} />;
     }
 
     return (
-        <div className="bg-gray-900 text-gray-100 min-h-screen">
+        <div className="min-h-screen bg-gray-900 text-gray-200 font-sans">
             <Header onLogout={handleLogout} />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <div className="lg:col-span-3">
+            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                <div className="flex flex-col md:flex-row gap-8">
+                    <aside className="w-full md:w-1/4">
                         <Navbar activeView={activeView} setActiveView={setActiveView} />
-                    </div>
-                    <main className="lg:col-span-9">
+                    </aside>
+                    <section className="flex-1">
                         {renderContent()}
-                    </main>
+                    </section>
                 </div>
-            </div>
+            </main>
         </div>
     );
 };

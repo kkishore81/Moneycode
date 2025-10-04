@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { GoogleIcon } from './icons';
+// Fix: Corrected import path for GoogleIcon from a root-level component.
+import { GoogleIcon } from './components/icons';
 
-// Fix: Updated AuthProps to align with props passed from App.tsx.
 interface AuthProps {
-    onLogin: () => void;
-    onSignupRequest: (email: string) => void;
+    onLogin: (email: string, pass: string) => void;
+    onSignup: (email: string, pass: string) => void;
     onGoogleLogin: () => void;
 }
 
 type AuthMode = 'signin' | 'signup';
 
-// Fix: Updated component signature and handler logic to use corrected props.
-export const Auth: React.FC<AuthProps> = ({ onLogin, onSignupRequest, onGoogleLogin }) => {
+export const Auth: React.FC<AuthProps> = ({ onLogin, onSignup, onGoogleLogin }) => {
     const [mode, setMode] = useState<AuthMode>('signin');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -19,9 +18,9 @@ export const Auth: React.FC<AuthProps> = ({ onLogin, onSignupRequest, onGoogleLo
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (mode === 'signin') {
-            onLogin();
+            onLogin(email, password);
         } else {
-            onSignupRequest(email);
+            onSignup(email, password);
         }
     };
 

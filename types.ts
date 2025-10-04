@@ -1,80 +1,56 @@
-// Transactions
+
 export enum TransactionType {
-  INCOME = 'Income',
-  EXPENSE = 'Expense',
+    INCOME = 'Income',
+    EXPENSE = 'Expense',
 }
 
 export enum TransactionCategory {
-  FOOD = 'Food',
-  TRANSPORT = 'Transport',
-  SHOPPING = 'Shopping',
-  BILLS = 'Bills',
-  ENTERTAINMENT = 'Entertainment',
-  HEALTH = 'Health',
-  HOUSING = 'Housing',
-  SALARY = 'Salary',
-  OTHER = 'Other',
+    FOOD = 'Food',
+    SHOPPING = 'Shopping',
+    TRANSPORT = 'Transport',
+    BILLS = 'Bills',
+    ENTERTAINMENT = 'Entertainment',
+    HEALTH = 'Health',
+    HOUSING = 'Housing',
+    SALARY = 'Salary',
+    INVESTMENT = 'Investment',
+    OTHER = 'Other',
 }
 
 export interface Transaction {
-  id: string;
-  date: string; // ISO string
-  description: string;
-  amount: number;
-  type: TransactionType;
-  category: TransactionCategory;
+    id: string;
+    date: string; // ISO string
+    amount: number;
+    description: string;
+    type: TransactionType;
+    category: TransactionCategory;
+    investmentId?: string; // Link to a specific investment
 }
 
-// Summary
 export interface FinancialSummary {
-  totalBalance: number;
-  monthlyIncome: number;
-  monthlyExpenses: number;
+    totalBalance: number;
+    monthlyIncome: number;
+    monthlyExpenses: number;
 }
 
-// Budgets
-export type Budgets = Partial<Record<TransactionCategory, number>>;
+export type Budgets = {
+    [key in TransactionCategory]?: number;
+};
 
-// Goals
 export interface Goal {
     id: string;
     name: string;
     targetAmount: number;
-    currentAmount: number;
+    currentAmount: number; // This will be calculated from linked investments
     deadline: string; // ISO string
 }
 
-// Investments
-export enum InvestmentType {
-    STOCKS = 'Stocks',
-    MUTUAL_FUNDS = 'Mutual Funds',
-    CRYPTO = 'Cryptocurrency',
-    FIXED_DEPOSIT = 'Fixed Deposit',
-    RECURRING_DEPOSIT = 'Recurring Deposit',
-}
-
-export interface InvestmentValueHistory {
-    date: string; // ISO string
-    value: number;
-}
-
-export interface Investment {
-    id: string;
-    name: string;
-    type: InvestmentType;
-    investedAmount: number;
-    currentValue: number;
-    purchaseDate: string; // ISO string
-    interestRate?: number; // For FD/RD
-    valueHistory?: InvestmentValueHistory[];
-}
-
-// Insurance
 export enum InsuranceType {
     LIFE = 'Life Insurance',
     HEALTH = 'Health Insurance',
     VEHICLE = 'Vehicle Insurance',
-    HOME = 'Home Insurance',
+    PROPERTY = 'Property Insurance',
+    OTHER = 'Other',
 }
 
 export interface InsurancePolicy {
@@ -88,12 +64,13 @@ export interface InsurancePolicy {
     expiryDate: string; // ISO string
 }
 
-// Loans
 export enum LoanType {
     PERSONAL = 'Personal Loan',
     HOME = 'Home Loan',
     CAR = 'Car Loan',
     EDUCATION = 'Education Loan',
+    BUSINESS = 'Business Loan',
+    OTHER = 'Other',
 }
 
 export interface Loan {
@@ -103,13 +80,12 @@ export interface Loan {
     principal: number;
     outstandingAmount: number;
     interestRate: number; // Annual percentage
-    tenure: number; // in years
+    tenure: number; // In years
     emi: number;
     startDate: string; // ISO string
-    assetCurrentValue?: number;
+    assetCurrentValue?: number; // Optional, for home/car loans
 }
 
-// Will Creator
 export interface WillPersonalInfo {
     fullName: string;
     address: string;
@@ -139,4 +115,40 @@ export interface Beneficiary {
 export interface Guardian {
     fullName: string;
     relationship: string;
+}
+
+export enum InvestmentType {
+    STOCKS = 'Stocks',
+    MUTUAL_FUNDS = 'Mutual Funds',
+    CRYPTO = 'Cryptocurrency',
+    FD = 'Fixed Deposit',
+    RECURRING_DEPOSIT = 'Recurring Deposit',
+    OTHER = 'Other',
+}
+
+export interface Investment {
+    id: string;
+    name: string;
+    type: InvestmentType;
+    currentValue: number; // Manual entry for non-auto-calculated types
+    goalId?: string;
+    // New fields for automated calculation
+    startDate?: string; // ISO String
+    interestRate?: number; // Annual percentage
+    monthlyInvestment?: number; // For RDs
+}
+
+// Enriched type after calculations
+export interface InvestmentWithPerformance extends Investment {
+    totalInvested: number;
+    pnl: number;
+    xirr: number;
+}
+
+
+export interface InvestmentSummary {
+    totalInvested: number;
+    totalCurrentValue: number;
+    overallGainLoss: number;
+    xirr: number;
 }
