@@ -1,0 +1,5 @@
+{
+  "name": "Indian Money Code",
+  "description": "An intelligent personal finance dashboard that provides insights into your spending habits and offers AI-powered financial advice using Gemini.",
+  "requestFramePermissions": []
+}
