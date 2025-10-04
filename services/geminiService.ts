@@ -1,11 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 import { Transaction, FinancialSummary } from '../types';
 
-// Fix: Use process.env.API_KEY as per guidelines and to resolve TypeScript error.
-const apiKey = process.env.API_KEY;
+const apiKey = import.meta.env.VITE_API_KEY;
+
 if (!apiKey) {
-    // Fix: Updated error message to match the environment variable name.
-    throw new Error("API_KEY is not set in the environment variables. Please add it to your .env file for local development or in your hosting provider's settings.");
+    throw new Error("VITE_API_KEY is not set in the environment. Please set it in your .env file for local development or in Vercel environment variables for deployment.");
 }
 
 const ai = new GoogleGenAI({ apiKey });
