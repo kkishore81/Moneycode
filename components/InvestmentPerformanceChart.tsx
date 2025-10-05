@@ -1,35 +1,25 @@
-import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-interface ChartData {
-    date: string;
-    [key: string]: any;
-}
+import React from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { InvestmentWithPerformance } from '../types';
 
 interface InvestmentPerformanceChartProps {
-    data: ChartData[];
-    dataKey?: string;
+    data: InvestmentWithPerformance[];
 }
 
-const formatXAxis = (tickItem: string) => {
-    return new Date(tickItem).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' });
-};
-
-const formatCurrency = (value: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value);
+const formatCurrency = (value: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value);
 
 
-export const InvestmentPerformanceChart: React.FC<InvestmentPerformanceChartProps> = ({ data, dataKey = "value" }) => {
+export const InvestmentPerformanceChart: React.FC<InvestmentPerformanceChartProps> = ({ data }) => {
     if (!data || data.length === 0) {
-        return <div className="text-center text-gray-500 py-8">No historical data available for this chart.</div>;
+        return <div className="text-center text-gray-500 py-8">Add investments to see their performance.</div>;
     }
-    
-    const sortedData = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     return (
         <div style={{ width: '100%', height: 300 }} className="mt-4">
             <ResponsiveContainer>
-                <LineChart
-                    data={sortedData}
+                <BarChart
+                    data={data}
                     margin={{
                         top: 5,
                         right: 30,
@@ -39,25 +29,28 @@ export const InvestmentPerformanceChart: React.FC<InvestmentPerformanceChartProp
                 >
                     <CartesianGrid strokeDasharray="3 3" stroke="#3a3a3a" />
                     <XAxis 
-                        dataKey="date" 
+                        dataKey="name" 
                         stroke="#9ca3af" 
-                        tickFormatter={formatXAxis} 
+                        tick={{ fontSize: 12 }}
+                        interval={0}
+                        angle={-20}
+                        textAnchor="end"
                     />
                     <YAxis 
                         stroke="#9ca3af" 
                         tickFormatter={(value) => `₹${Number(value) / 1000}k`}
-                        domain={['auto', 'auto']}
                         width={80}
                     />
                     <Tooltip
                         contentStyle={{ backgroundColor: '#2a2a2a', border: 'none', borderRadius: '8px' }}
                         itemStyle={{ color: '#e5e7eb' }}
                         formatter={(value: number) => formatCurrency(value)}
-                        labelFormatter={(label: string) => new Date(label).toLocaleDateString('en-IN')}
+                        labelFormatter={(label: string) => label}
                     />
                     <Legend wrapperStyle={{ color: '#9ca3af' }} />
-                    <Line type="monotone" dataKey={dataKey} name="Value" stroke="#34d399" activeDot={{ r: 8 }} strokeWidth={2} dot={false} />
-                </LineChart>
+                    <Bar dataKey="totalInvested" name="Total Invested" fill="#fbbf24" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="currentValue" name="Current Value" fill="#34d399" radius={[4, 4, 0, 0]} />
+                </BarChart>
             </ResponsiveContainer>
         </div>
     );

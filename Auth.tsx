@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-// Fix: Corrected import path for GoogleIcon from a root-level component.
 import { GoogleIcon } from './components/icons';
 
 interface AuthProps {
-    onLogin: (email: string, pass: string) => void;
-    onSignup: (email: string, pass: string) => void;
+    onLogin: () => void;
+    onSignupRequest: (email: string) => void;
     onGoogleLogin: () => void;
 }
 
 type AuthMode = 'signin' | 'signup';
 
-export const Auth: React.FC<AuthProps> = ({ onLogin, onSignup, onGoogleLogin }) => {
+export const Auth: React.FC<AuthProps> = ({ onLogin, onSignupRequest, onGoogleLogin }) => {
     const [mode, setMode] = useState<AuthMode>('signin');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -18,9 +17,9 @@ export const Auth: React.FC<AuthProps> = ({ onLogin, onSignup, onGoogleLogin }) 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (mode === 'signin') {
-            onLogin(email, password);
+            onLogin();
         } else {
-            onSignup(email, password);
+            onSignupRequest(email);
         }
     };
 

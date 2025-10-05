@@ -1,21 +1,34 @@
 import { GoogleGenAI } from "@google/genai";
 import { Transaction, FinancialSummary } from '../types';
 
-// Fix: Per coding guidelines, API key must be read from process.env.API_KEY.
+// Per coding guidelines, API key must be read from process.env.API_KEY.
 const apiKey = process.env.API_KEY;
+let ai: GoogleGenAI | null = null;
+let initError: string | null = null;
 
 if (!apiKey) {
-    // Fix: Updated error message to reflect the new API key source.
-    throw new Error("API_KEY is not set in the environment. Please ensure it is configured.");
+    // This will be displayed in the UI instead of crashing the app.
+    initError = "AI Advisor Error: The API_KEY is not configured. Please set it in your Vercel project's environment variables.";
+} else {
+    try {
+        ai = new GoogleGenAI({ apiKey });
+    } catch (error) {
+        console.error("Failed to initialize GoogleGenAI:", error);
+        initError = "AI Advisor Error: Failed to initialize the AI service. Please check the console for details.";
+    }
 }
 
-const ai = new GoogleGenAI({ apiKey });
 
 export async function getFinancialAdvice(
     prompt: string,
     transactions: Transaction[],
     summary: FinancialSummary
 ): Promise<string> {
+    if (!ai) {
+        console.error("Gemini AI service not initialized:", initError);
+        return initError || "I'm sorry, but the AI service is not available due to a configuration error.";
+    }
+    
     const financialDataContext = `
         Here is a summary of the user's financial data for the current month:
         - Total Balance: ₹${summary.totalBalance.toFixed(2)}

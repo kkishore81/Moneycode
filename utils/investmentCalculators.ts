@@ -1,4 +1,5 @@
-import { InvestmentWithPerformance } from '../types';
+
+import { InvestmentWithPerformance, Transaction, TransactionCategory } from '../types';
 import { calculateXIRR } from './xirr';
 
 // A = P(1 + r/n)^(nt)
@@ -54,22 +55,26 @@ export const calculateRdValue = (monthlyInvestment: number, annualRate: number, 
 };
 
 
-export const calculateInvestmentSummary = (investments: InvestmentWithPerformance[]) => {
+export const calculateInvestmentSummary = (investments: InvestmentWithPerformance[], transactions: Transaction[]) => {
     const totalInvested = investments.reduce((sum, inv) => sum + inv.totalInvested, 0);
     const totalCurrentValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
     const overallGainLoss = totalCurrentValue - totalInvested;
 
-    // For portfolio XIRR, we need all cash flows
-    const cashFlows: { value: number; date: Date }[] = [];
-     investments.forEach(inv => {
-        // Find transactions for this investment (logic is in App.tsx)
-        // This is a simplification; the real cash flows need to be passed in
-        // For now, let's use a proxy for summary.
-        if (inv.totalInvested > 0) {
-            cashFlows.push({ value: -inv.totalInvested, date: new Date(inv.startDate || Date.now()) });
-            cashFlows.push({ value: inv.currentValue, date: new Date() });
-        }
-    });
+    // For portfolio XIRR, use all investment transactions as outflows
+    const investmentTransactions = transactions.filter(t => t.category === TransactionCategory.INVESTMENT);
+    
+    const cashFlows = investmentTransactions.map(t => ({
+        value: -t.amount,
+        date: new Date(t.date)
+    }));
+
+    // Add the total current value as the final inflow
+    if (totalCurrentValue > 0) {
+        cashFlows.push({ value: totalCurrentValue, date: new Date() });
+    }
+    
+    // Sort cashflows by date before calculating XIRR
+    cashFlows.sort((a, b) => a.date.getTime() - b.date.getTime());
 
     const values = cashFlows.map(cf => cf.value);
     const dates = cashFlows.map(cf => cf.date);

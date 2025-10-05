@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Auth } from './components/Auth';
+import { Auth } from './Auth';
 import { Verification } from './Verification';
 import { Header } from './components/Header';
 import { Navbar, View } from './components/Navbar';

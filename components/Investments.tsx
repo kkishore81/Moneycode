@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 // Fix: Import additional types required for props and logic.
-import { Investment, InvestmentWithPerformance, Transaction, TransactionCategory } from '../types';
+import { Investment, InvestmentWithPerformance, Transaction } from '../types';
 import { InvestmentOverview } from './InvestmentOverview';
 import { InvestmentList } from './InvestmentList';
 import { InvestmentModal } from './InvestmentModal';
@@ -21,28 +21,8 @@ export const Investments: React.FC<InvestmentsProps> = ({ investments, transacti
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [investmentToEdit, setInvestmentToEdit] = useState<Investment | null>(null);
 
-    const summary = useMemo(() => calculateInvestmentSummary(investments), [investments]);
+    const summary = useMemo(() => calculateInvestmentSummary(investments, transactions), [investments, transactions]);
     
-    // Fix: Corrected chart data calculation logic to use the passed transactions prop.
-    const chartData = useMemo(() => {
-        const investmentTransactions = transactions.filter(
-            (t) => t.category === TransactionCategory.INVESTMENT
-        );
-        
-        if (investmentTransactions.length === 0) return [];
-
-        const dataPoints = investmentTransactions.map(t => ({ date: t.date, value: t.amount }));
-        
-        dataPoints.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        
-        let runningTotal = 0;
-        return dataPoints.map(dp => {
-            runningTotal += dp.value;
-            return { date: dp.date, value: runningTotal };
-        });
-
-    }, [transactions]);
-
     const handleOpenAddModal = () => {
         setInvestmentToEdit(null);
         setIsModalOpen(true);
@@ -66,8 +46,8 @@ export const Investments: React.FC<InvestmentsProps> = ({ investments, transacti
             <InvestmentOverview summary={summary} />
 
             <div className="bg-gray-800 rounded-2xl shadow-lg p-6">
-                <h3 className="text-xl font-bold text-white mb-4">Portfolio Growth</h3>
-                <InvestmentPerformanceChart data={chartData} dataKey="value" />
+                <h3 className="text-xl font-bold text-white mb-4">Portfolio Performance</h3>
+                <InvestmentPerformanceChart data={investments} />
             </div>
 
             <InvestmentList 
