@@ -7,7 +7,7 @@ interface LoanListProps {
     onDelete: (loanId: string) => void;
 }
 
-const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 
 export const LoanList: React.FC<LoanListProps> = ({ loans, onEdit, onDelete }) => {
     return (

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { InvestmentSummary } from '../types';
 import { DashboardCard } from './DashboardCard';
@@ -8,7 +9,7 @@ interface InvestmentOverviewProps {
 
 export const InvestmentOverview: React.FC<InvestmentOverviewProps> = ({ summary }) => {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <DashboardCard title="Total Invested" value={summary.totalInvested} formatAsCurrency />
             <DashboardCard title="Current Value" value={summary.totalCurrentValue} formatAsCurrency />
             <DashboardCard 

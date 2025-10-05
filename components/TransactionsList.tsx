@@ -45,7 +45,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({ transactions
           <div className="flex items-center space-x-4">
              <p className={`font-bold ${transaction.type === TransactionType.INCOME ? 'text-green-400' : 'text-red-400'}`}>
                 {transaction.type === TransactionType.INCOME ? '+' : '-'}
-                ₹{transaction.amount.toLocaleString('en-IN')}
+                ₹{transaction.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
              </p>
              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-2">
                 <button onClick={() => onEdit(transaction)} className="p-1 text-gray-400 hover:text-white">

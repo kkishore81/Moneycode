@@ -21,7 +21,7 @@ export const Goals: React.FC<GoalsProps> = ({ goals, onAddGoal, onUpdateGoal, on
     const [formState, setFormState] = useState<Omit<Goal, 'id' | 'currentAmount'> & { id?: string }>(initialFormState);
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-    const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+    const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
     const formatDate = (dateString: string) => new Date(dateString).toISOString().split('T')[0]; // YYYY-MM-DD for input
 
     const openAddModal = () => {

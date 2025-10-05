@@ -22,7 +22,7 @@ export const UpcomingPremiums: React.FC<UpcomingPremiumsProps> = ({ policies }) 
         return dueDate >= now && dueDate <= thirtyDaysFromNow;
     });
 
-    const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+    const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
     const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 
 

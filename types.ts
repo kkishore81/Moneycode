@@ -1,4 +1,3 @@
-
 export enum TransactionType {
     INCOME = 'Income',
     EXPENSE = 'Expense',
@@ -151,4 +150,12 @@ export interface InvestmentSummary {
     totalCurrentValue: number;
     overallGainLoss: number;
     xirr: number;
+}
+
+export type RiskProfile = 'Conservative' | 'Moderate' | 'Aggressive';
+
+export interface OtherAsset {
+    id: string;
+    name: string;
+    value: number;
 }

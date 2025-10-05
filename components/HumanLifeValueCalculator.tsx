@@ -48,7 +48,7 @@ export const HumanLifeValueCalculator: React.FC = () => {
         return { insuranceGap, totalNeeds, assetsAvailable };
     }, [inputs]);
 
-    const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
+    const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 
     return (
         <div className="bg-gray-800 rounded-2xl shadow-lg p-6 h-full">

@@ -10,7 +10,7 @@ interface DashboardCardProps {
 
 export const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, formatAsCurrency, isPositive, isNegative }) => {
   const formattedValue = formatAsCurrency 
-    ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value)
+    ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)
     : value.toString();
 
   const valueColor = isPositive ? 'text-green-400' : isNegative ? 'text-red-400' : 'text-white';

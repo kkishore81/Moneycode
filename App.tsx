@@ -12,7 +12,7 @@ import { Insurance } from './components/Insurance';
 import { Loans } from './components/Loans';
 import { Calculators } from './components/Calculators';
 import { WillCreator } from './components/WillCreator';
-import { Transaction, TransactionType, TransactionCategory, Budgets, Goal, InsurancePolicy, InsuranceType, Loan, LoanType, Investment, InvestmentType, InvestmentWithPerformance } from './types';
+import { Transaction, TransactionType, TransactionCategory, Budgets, Goal, InsurancePolicy, InsuranceType, Loan, LoanType, Investment, InvestmentType, InvestmentWithPerformance, OtherAsset } from './types';
 import { calculateXIRR } from './utils/xirr';
 import { calculateFdValue, calculateRdValue } from './utils/investmentCalculators';
 
@@ -56,7 +56,11 @@ const mockData = {
         { id: 'fd1', name: 'SBI Fixed Deposit', type: InvestmentType.FD, currentValue: 100000, startDate: new Date(2023, 0, 15).toISOString(), interestRate: 7.5 },
         { id: 'rd1', name: 'ICICI Recurring Deposit', type: InvestmentType.RECURRING_DEPOSIT, currentValue: 10000, startDate: new Date(2023, 6, 5).toISOString(), interestRate: 7.0, monthlyInvestment: 5000 },
         { id: simpleId(), name: 'Nifty 50 Index Fund', type: InvestmentType.MUTUAL_FUNDS, currentValue: 120000 },
-    ]
+    ],
+    otherAssets: [
+        { id: simpleId(), name: 'Savings Account Balance', value: 250000 },
+        { id: simpleId(), name: 'Primary Home Value', value: 7500000 },
+    ],
 };
 
 
@@ -73,6 +77,7 @@ const App: React.FC = () => {
     const [policies, setPolicies] = useState<InsurancePolicy[]>([]);
     const [loans, setLoans] = useState<Loan[]>([]);
     const [investments, setInvestments] = useState<Investment[]>([]);
+    const [otherAssets, setOtherAssets] = useState<OtherAsset[]>([]);
     
     // Load data from mock on mount
     useEffect(() => {
@@ -82,6 +87,7 @@ const App: React.FC = () => {
         setPolicies(mockData.insurancePolicies);
         setLoans(mockData.loans);
         setInvestments(mockData.investments);
+        setOtherAssets(mockData.otherAssets);
     }, []);
 
     const investmentsWithPerformance = useMemo((): InvestmentWithPerformance[] => {
@@ -117,6 +123,32 @@ const App: React.FC = () => {
         });
     }, [investments, transactions]);
 
+    // Data Handlers for Transactions and Assets
+    const handleAddTransaction = (transaction: Omit<Transaction, 'id'>) => {
+        const newTransaction = { ...transaction, id: simpleId() };
+        setTransactions(prev => [...prev, newTransaction].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+    };
+
+    const handleUpdateTransaction = (transaction: Transaction) => {
+        setTransactions(prev => prev.map(t => t.id === transaction.id ? transaction : t));
+    };
+
+    const handleDeleteTransaction = (id: string) => {
+        setTransactions(prev => prev.filter(t => t.id !== id));
+    };
+
+    const handleSaveAsset = (asset: Omit<OtherAsset, 'id'> | OtherAsset) => {
+        if ('id' in asset) {
+            setOtherAssets(prev => prev.map(a => a.id === asset.id ? asset : a));
+        } else {
+            setOtherAssets(prev => [...prev, { ...asset, id: simpleId() }]);
+        }
+    };
+
+    const handleDeleteAsset = (assetId: string) => {
+        setOtherAssets(prev => prev.filter(a => a.id !== assetId));
+    };
+
 
     // Auth Handlers
     const handleLogin = () => {
@@ -145,7 +177,17 @@ const App: React.FC = () => {
 
     const renderContent = () => {
         switch (activeView) {
-            case 'dashboard': return <Dashboard transactions={transactions} />;
+            case 'dashboard': return <Dashboard 
+                transactions={transactions} 
+                investments={investmentsWithPerformance} 
+                loans={loans} 
+                otherAssets={otherAssets} 
+                onSaveAsset={handleSaveAsset} 
+                onDeleteAsset={handleDeleteAsset}
+                onAddTransaction={handleAddTransaction}
+                onUpdateTransaction={handleUpdateTransaction}
+                onDeleteTransaction={handleDeleteTransaction}
+            />;
             case 'budgets': return <Budget transactions={transactions} budgets={budgets} onSetBudget={(cat, amt) => setBudgets(b => ({...b, [cat]: amt}))} onResetBudgets={() => setBudgets({})} />;
             case 'goals': return <Goals goals={goals} onAddGoal={() => {}} onUpdateGoal={() => {}} onDeleteGoal={() => {}} />;
             // Fix: Pass transactions to Investments component to fix chart data calculation.
@@ -154,7 +196,17 @@ const App: React.FC = () => {
             case 'loans': return <Loans loans={loans} onSaveLoan={() => {}} onDeleteLoan={() => {}} />;
             case 'calculators': return <Calculators />;
             case 'will-creator': return <WillCreator />;
-            default: return <Dashboard transactions={transactions} />;
+            default: return <Dashboard 
+                transactions={transactions} 
+                investments={investmentsWithPerformance} 
+                loans={loans} 
+                otherAssets={otherAssets} 
+                onSaveAsset={handleSaveAsset} 
+                onDeleteAsset={handleDeleteAsset} 
+                onAddTransaction={handleAddTransaction}
+                onUpdateTransaction={handleUpdateTransaction}
+                onDeleteTransaction={handleDeleteTransaction}
+            />;
         }
     };
     

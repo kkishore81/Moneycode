@@ -7,7 +7,7 @@ interface InvestmentListProps {
     onDelete: (investmentId: string) => void;
 }
 
-const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 
 export const InvestmentList: React.FC<InvestmentListProps> = ({ investments, onEdit, onDelete }) => {
     return (

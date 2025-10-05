@@ -1,23 +1,46 @@
+
 import React, { useMemo, useState } from 'react';
-import { Transaction, TransactionType, FinancialSummary } from '../types';
-import { DashboardCard } from './DashboardCard';
+import { Transaction, FinancialSummary, InvestmentWithPerformance, Loan, OtherAsset } from '../types';
 import { CashFlowChart } from './CashFlowChart';
 import { ExpenseChart } from './ExpenseChart';
 import { TransactionsList } from './TransactionsList';
 import { FinancialAdvisor } from './FinancialAdvisor';
 import { TransactionModal } from './TransactionModal';
 import { CustomizeDashboardModal } from './CustomizeDashboardModal';
+import { NetWorth } from './NetWorth';
+import { OtherAssetsList } from './OtherAssetsList';
+import { AssetModal } from './AssetModal';
 import { DashboardWidgetSettings } from '../App';
 
 interface DashboardProps {
     transactions: Transaction[];
+    investments: InvestmentWithPerformance[];
+    loans: Loan[];
+    otherAssets: OtherAsset[];
+    onSaveAsset: (asset: Omit<OtherAsset, 'id'> | OtherAsset) => void;
+    onDeleteAsset: (assetId: string) => void;
+    onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
+    onUpdateTransaction: (transaction: Transaction) => void;
+    onDeleteTransaction: (id: string) => void;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ transactions: initialTransactions }) => {
-    const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+export const Dashboard: React.FC<DashboardProps> = ({ 
+    transactions,
+    investments,
+    loans,
+    otherAssets,
+    onSaveAsset,
+    onDeleteAsset,
+    onAddTransaction,
+    onUpdateTransaction,
+    onDeleteTransaction,
+}) => {
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+    const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
     const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
+    
     const [transactionToEdit, setTransactionToEdit] = useState<Transaction | null>(null);
+    const [assetToEdit, setAssetToEdit] = useState<OtherAsset | null>(null);
 
     const [widgetSettings, setWidgetSettings] = useState<DashboardWidgetSettings>({
         summaryCards: true,
@@ -29,30 +52,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions: initialTrans
     
     const financialSummary = useMemo((): FinancialSummary => {
         const monthlyIncome = transactions
-            .filter(t => t.type === TransactionType.INCOME)
+            .filter(t => t.type === 'Income')
             .reduce((sum, t) => sum + t.amount, 0);
 
         const monthlyExpenses = transactions
-            .filter(t => t.type === TransactionType.EXPENSE)
+            .filter(t => t.type === 'Expense')
             .reduce((sum, t) => sum + t.amount, 0);
 
         const totalBalance = monthlyIncome - monthlyExpenses;
         
         return { totalBalance, monthlyIncome, monthlyExpenses };
     }, [transactions]);
-
-    const handleAddTransaction = (transaction: Omit<Transaction, 'id'>) => {
-        const newTransaction = { ...transaction, id: Math.random().toString(36).substring(2, 9) };
-        setTransactions(prev => [...prev, newTransaction].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    };
-
-    const handleUpdateTransaction = (transaction: Transaction) => {
-        setTransactions(prev => prev.map(t => t.id === transaction.id ? transaction : t));
-    };
-
-    const handleDeleteTransaction = (id: string) => {
-        setTransactions(prev => prev.filter(t => t.id !== id));
-    };
 
     const handleOpenEditModal = (transaction: Transaction) => {
         setTransactionToEdit(transaction);
@@ -63,8 +73,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions: initialTrans
         setTransactionToEdit(null);
         setIsTransactionModalOpen(true);
     };
+    
+    const handleOpenAddAssetModal = () => {
+        setAssetToEdit(null);
+        setIsAssetModalOpen(true);
+    }
+    
+    const handleOpenEditAssetModal = (asset: OtherAsset) => {
+        setAssetToEdit(asset);
+        setIsAssetModalOpen(true);
+    }
 
-    const expenses = useMemo(() => transactions.filter(t => t.type === TransactionType.EXPENSE), [transactions]);
+    const expenses = useMemo(() => transactions.filter(t => t.type === 'Expense'), [transactions]);
 
     return (
         <div className="space-y-8">
@@ -76,13 +96,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions: initialTrans
                 </div>
             </div>
 
-            {widgetSettings.summaryCards && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <DashboardCard title="Total Balance" value={financialSummary.totalBalance} formatAsCurrency />
-                    <DashboardCard title="Monthly Income" value={financialSummary.monthlyIncome} formatAsCurrency isPositive />
-                    <DashboardCard title="Monthly Expenses" value={financialSummary.monthlyExpenses} formatAsCurrency isNegative />
-                </div>
-            )}
+            <NetWorth investments={investments} loans={loans} otherAssets={otherAssets} />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {widgetSettings.cashFlowChart && (
@@ -98,11 +112,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions: initialTrans
                     </div>
                 )}
             </div>
+            
+            <OtherAssetsList 
+                assets={otherAssets}
+                onAdd={handleOpenAddAssetModal}
+                onEdit={handleOpenEditAssetModal}
+                onDelete={onDeleteAsset}
+            />
 
             {widgetSettings.transactionsList && (
                 <div className="bg-gray-800 rounded-2xl shadow-lg p-6">
                     <h2 className="text-xl font-bold mb-4 text-white">Recent Transactions</h2>
-                    <TransactionsList transactions={transactions} onEdit={handleOpenEditModal} onDelete={handleDeleteTransaction} />
+                    <TransactionsList transactions={transactions} onEdit={handleOpenEditModal} onDelete={onDeleteTransaction} />
                 </div>
             )}
             
@@ -115,12 +136,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions: initialTrans
                 onClose={() => setIsTransactionModalOpen(false)}
                 onSave={(data) => {
                     if('id' in data) {
-                        handleUpdateTransaction(data);
+                        onUpdateTransaction(data);
                     } else {
-                        handleAddTransaction(data);
+                        onAddTransaction(data);
                     }
                 }}
                 transactionToEdit={transactionToEdit}
+            />
+
+            <AssetModal
+                isOpen={isAssetModalOpen}
+                onClose={() => setIsAssetModalOpen(false)}
+                onSave={onSaveAsset}
+                assetToEdit={assetToEdit}
             />
 
             <CustomizeDashboardModal 

@@ -32,7 +32,7 @@ const BudgetCategoryRow: React.FC<{
         progressBarColor = 'bg-yellow-500';
     }
 
-    const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+    const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-4 bg-gray-700/50 rounded-lg">
