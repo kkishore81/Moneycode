@@ -1,7 +1,8 @@
 
+
 import React from 'react';
 // Fix: Corrected import path for types.
-import { TransactionCategory } from '../types';
+import { TransactionCategory } from '../types.ts';
 
 interface CategoryIconProps {
   category: TransactionCategory;

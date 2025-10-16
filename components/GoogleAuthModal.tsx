@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Modal } from './Modal';
-import { GoogleIcon } from './icons';
-import { signInWithGoogle } from '../services/authService';
+import { Modal } from './Modal.tsx';
+import { GoogleIcon } from './icons.tsx';
+import { signInWithGoogle } from '../services/authService.ts';
 
 interface GoogleAuthModalProps {
     isOpen: boolean;

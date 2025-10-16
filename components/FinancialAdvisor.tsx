@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Transaction, FinancialSummary } from '../types';
-import { getFinancialAdvice } from '../services/geminiService';
+import { Transaction, FinancialSummary } from '../types.ts';
+import { getFinancialAdvice } from '../services/geminiService.ts';
 
 interface FinancialAdvisorProps {
     transactions: Transaction[];

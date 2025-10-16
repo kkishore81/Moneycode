@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { InsurancePolicy } from '../types';
-import { UpcomingPremiums } from './UpcomingPremiums';
-import { HumanLifeValueCalculator } from './HumanLifeValueCalculator';
-import { InsuranceList } from './InsuranceList';
-import { InsuranceModal } from './InsuranceModal';
-import { Modal } from './Modal';
+import { InsurancePolicy } from '../types.ts';
+import { UpcomingPremiums } from './UpcomingPremiums.tsx';
+import { HumanLifeValueCalculator } from './HumanLifeValueCalculator.tsx';
+import { InsuranceList } from './InsuranceList.tsx';
+import { InsuranceModal } from './InsuranceModal.tsx';
+import { Modal } from './Modal.tsx';
 
 interface InsuranceProps {
     policies: InsurancePolicy[];
@@ -75,6 +75,7 @@ export const Insurance: React.FC<InsuranceProps> = ({ policies, onAddPolicy, onU
                 policies={policies}
                 onEdit={handleOpenEditModal}
                 onDelete={(id) => setDeleteConfirmId(id)}
+                onAdd={handleOpenAddModal}
             />
 
             <InsuranceModal

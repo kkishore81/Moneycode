@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { Budgets, Transaction, TransactionCategory, TransactionType } from '../types';
-import { CategoryIcon } from './CategoryIcon';
-import { Modal } from './Modal';
-import { TransactionModal } from './TransactionModal';
+import { Budgets, Transaction, TransactionCategory, TransactionType } from '../types.ts';
+import { CategoryIcon } from './CategoryIcon.tsx';
+import { Modal } from './Modal.tsx';
+import { TransactionModal } from './TransactionModal.tsx';
 
 interface BudgetProps {
     transactions: Transaction[];
@@ -101,12 +101,13 @@ export const Budget: React.FC<BudgetProps> = ({ transactions, budgets, onSetBudg
         });
     }, [transactions, selectedMonth]);
 
+    // Fix: Correctly typed the initial value for the reduce function. This ensures proper type inference for
+    // the accumulator `acc` and the resulting `expensesByCategory` object, which resolves both TypeScript errors.
     const expensesByCategory = useMemo(() => {
         return filteredTransactions
             .filter(t => t.type === TransactionType.EXPENSE)
-            .reduce((acc: Record<TransactionCategory, number>, t) => {
-                // Fix: Ensure the value from the accumulator is treated as a number before the arithmetic operation.
-                acc[t.category] = (Number(acc[t.category]) || 0) + t.amount;
+            .reduce((acc, t) => {
+                acc[t.category] = (acc[t.category] || 0) + t.amount;
                 return acc;
             }, {} as Record<TransactionCategory, number>);
     }, [filteredTransactions]);
@@ -116,8 +117,7 @@ export const Budget: React.FC<BudgetProps> = ({ transactions, budgets, onSetBudg
             .filter(t => t.type === TransactionType.INCOME)
             .reduce((sum, t) => sum + t.amount, 0);
 
-        // Fix: Explicitly cast `amount` to a number to handle cases where `Object.values` might return `unknown[]`.
-        const expenses = Object.values(expensesByCategory).reduce((sum, amount) => sum + (Number(amount) || 0), 0);
+        const expenses = Object.values(expensesByCategory).reduce((sum, amount) => sum + amount, 0);
 
         return {
             totalIncome: income,

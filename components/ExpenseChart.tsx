@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 // Fix: Corrected import path for types.
-import { Transaction, TransactionCategory } from '../types';
+import { Transaction, TransactionCategory } from '../types.ts';
 
 interface ExpenseChartProps {
   data: Transaction[];

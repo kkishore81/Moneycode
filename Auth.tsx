@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { GoogleIcon } from './components/icons';
-import { signUpWithEmail, signInWithEmail } from './services/authService';
+import { GoogleIcon } from './components/icons.tsx';
+import { signUpWithEmail, signInWithEmail } from './services/authService.ts';
 
 interface AuthProps {
     onGoogleSignIn: () => void;

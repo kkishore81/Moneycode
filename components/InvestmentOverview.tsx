@@ -1,7 +1,8 @@
 
+
 import React from 'react';
-import { InvestmentSummary } from '../types';
-import { DashboardCard } from './DashboardCard';
+import { InvestmentSummary } from '../types.ts';
+import { DashboardCard } from './DashboardCard.tsx';
 
 interface InvestmentOverviewProps {
     summary: InvestmentSummary;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Loan, LoanType } from '../types';
-import { Modal } from './Modal';
-import { calculateEMI } from '../utils/loanCalculators';
+import { Loan, LoanType } from '../types.ts';
+import { Modal } from './Modal.tsx';
+import { calculateEMI } from '../utils/loanCalculators.ts';
 
 interface LoanModalProps {
     isOpen: boolean;

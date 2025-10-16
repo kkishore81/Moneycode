@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Investment, InvestmentWithPerformance, Transaction, RiskProfile, InvestmentType, Goal } from '../types';
-import { InvestmentOverview } from './InvestmentOverview';
-import { InvestmentList } from './InvestmentList';
-import { InvestmentModal } from './InvestmentModal';
-import { InvestmentPerformanceChart } from './InvestmentPerformanceChart';
-import { calculateInvestmentSummary } from '../utils/investmentCalculators';
-import { RiskProfilerModal } from './RiskProfilerModal';
+import { Investment, InvestmentWithPerformance, Transaction, RiskProfile, InvestmentType, Goal } from '../types.ts';
+import { InvestmentOverview } from './InvestmentOverview.tsx';
+import { InvestmentList } from './InvestmentList.tsx';
+import { InvestmentModal } from './InvestmentModal.tsx';
+import { InvestmentPerformanceChart } from './InvestmentPerformanceChart.tsx';
+import { calculateInvestmentSummary } from '../utils/investmentCalculators.ts';
+import { RiskProfilerModal } from './RiskProfilerModal.tsx';
 
 interface InvestmentsProps {
     investments: InvestmentWithPerformance[];
@@ -79,8 +79,6 @@ export const Investments: React.FC<InvestmentsProps> = ({ investments, transacti
 
         const escapeCsvField = (field: any) => {
             const stringField = String(field);
-            // If the field contains a comma, double quote, or newline, wrap it in double quotes.
-            // Also, escape any existing double quotes by doubling them up.
             if (/[",\n]/.test(stringField)) {
                 return `"${stringField.replace(/"/g, '""')}"`;
             }
@@ -108,7 +106,7 @@ export const Investments: React.FC<InvestmentsProps> = ({ investments, transacti
 
         const csvContent = [
             ...summaryRows.map(row => row.map(escapeCsvField).join(',')),
-            '', // Empty line for spacing
+            '',
             investmentHeader.map(escapeCsvField).join(','),
             ...investmentRows.map(row => row.map(escapeCsvField).join(','))
         ].join('\r\n');
@@ -245,6 +243,7 @@ export const Investments: React.FC<InvestmentsProps> = ({ investments, transacti
                 investments={filteredInvestments}
                 onEdit={handleOpenEditModal}
                 onDelete={onDeleteInvestment}
+                onAdd={handleOpenAddModal}
             />
 
             <InvestmentModal 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { WillPersonalInfo, Executor, Beneficiary, Asset, Guardian } from '../types';
+import { WillPersonalInfo, Executor, Beneficiary, Asset, Guardian } from '../types.ts';
 
 const StepIndicator: React.FC<{ currentStep: number; totalSteps: number }> = ({ currentStep, totalSteps }) => {
     return (

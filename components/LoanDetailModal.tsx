@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Loan } from '../types';
-import { Modal } from './Modal';
-import { calculateAmortization } from '../utils/loanCalculators';
+import { Loan } from '../types.ts';
+import { Modal } from './Modal.tsx';
+import { calculateAmortization } from '../utils/loanCalculators.ts';
 
 interface LoanDetailModalProps {
     loan: Loan | null;

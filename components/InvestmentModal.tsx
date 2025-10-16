@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Investment, InvestmentType, Goal } from '../types';
-import { Modal } from './Modal';
+import { Investment, InvestmentType, Goal } from '../types.ts';
+import { Modal } from './Modal.tsx';
 
 interface InvestmentModalProps {
     isOpen: boolean;

@@ -1,6 +1,7 @@
 
+
 import React, { useState } from 'react';
-import { RiskProfile } from '../types';
+import { RiskProfile } from '../types.ts';
 
 interface RiskProfilerModalProps {
     isOpen: boolean;

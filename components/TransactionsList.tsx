@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Transaction, TransactionType } from '../types';
-import { CategoryIcon } from './CategoryIcon';
-import { Modal } from './Modal';
+import { Transaction, TransactionType } from '../types.ts';
+import { CategoryIcon } from './CategoryIcon.tsx';
+import { Modal } from './Modal.tsx';
 
 interface TransactionsListProps {
   transactions: Transaction[];

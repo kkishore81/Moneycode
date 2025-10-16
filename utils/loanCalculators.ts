@@ -1,4 +1,4 @@
-import { Loan } from '../types';
+import { Loan } from '../types.ts';
 
 export const calculateEMI = (principal: number, annualRate: number, tenureYears: number): number => {
     if (principal <= 0 || annualRate < 0 || tenureYears <= 0) {

@@ -6,7 +6,7 @@ import {
     signOut,
     sendEmailVerification,
 } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth } from '../firebase.ts';
 
 export const signUpWithEmail = async (email: string, password: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);

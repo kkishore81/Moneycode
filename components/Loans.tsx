@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Loan } from '../types';
-import { LoanForeclosureSimulator } from './LoanForeclosureSimulator';
-import { LoanList } from './LoanList';
-import { LoanModal } from './LoanModal';
-import { LoanDetailModal } from './LoanDetailModal';
-import { Modal } from './Modal';
+import { Loan } from '../types.ts';
+import { LoanForeclosureSimulator } from './LoanForeclosureSimulator.tsx';
+import { LoanList } from './LoanList.tsx';
+import { LoanModal } from './LoanModal.tsx';
+import { LoanDetailModal } from './LoanDetailModal.tsx';
+import { Modal } from './Modal.tsx';
 
 interface LoansProps {
     loans: Loan[];
@@ -76,6 +76,7 @@ export const Loans: React.FC<LoansProps> = ({ loans, onSaveLoan, onDeleteLoan })
                 onEdit={handleOpenEditModal}
                 onDelete={(id) => setDeleteConfirmId(id)}
                 onViewDetails={handleViewDetails}
+                onAdd={handleOpenAddModal}
             />
 
             <LoanModal 

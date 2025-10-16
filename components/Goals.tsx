@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Goal } from '../types';
-import { Modal } from './Modal';
+import { Goal } from '../types.ts';
+import { Modal } from './Modal.tsx';
 
 interface GoalsProps {
     goals: Goal[];
@@ -115,7 +115,15 @@ export const Goals: React.FC<GoalsProps> = ({ goals, onAddGoal, onUpdateGoal, on
                         )
                     })
                 ) : (
-                    <p className="text-gray-400 text-center py-8">No goals set yet. Add a goal to start saving!</p>
+                    <div className="text-center py-12 text-gray-400">
+                        <p className="mb-4">No goals set yet. Add a goal to start saving!</p>
+                        <button 
+                            onClick={openAddModal}
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                        >
+                            + Create Your First Goal
+                        </button>
+                    </div>
                 )}
             </div>
 

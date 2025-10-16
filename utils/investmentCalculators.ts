@@ -1,6 +1,7 @@
 
-import { InvestmentWithPerformance, Transaction, TransactionCategory } from '../types';
-import { calculateXIRR } from './xirr';
+
+import { InvestmentWithPerformance, Transaction, TransactionCategory } from '../types.ts';
+import { calculateXIRR } from './xirr.ts';
 
 // A = P(1 + r/n)^(nt)
 // P = principal, r = annual rate, n = compounding periods per year, t = time in years

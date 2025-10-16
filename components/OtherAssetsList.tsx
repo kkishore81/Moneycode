@@ -1,5 +1,5 @@
 import React from 'react';
-import { OtherAsset } from '../types';
+import { OtherAsset } from '../types.ts';
 
 interface OtherAssetsListProps {
     assets: OtherAsset[];
@@ -49,7 +49,15 @@ export const OtherAssetsList: React.FC<OtherAssetsListProps> = ({ assets, onAdd,
                     ))}
                 </div>
             ) : (
-                <p className="text-gray-400 text-center py-8">Add other assets like your bank balance, property, or gold to get a complete net worth calculation.</p>
+                <div className="text-center py-12 text-gray-400">
+                    <p className="mb-4">Add assets like your bank balance, property, or gold to get a complete net worth calculation.</p>
+                     <button 
+                        onClick={onAdd}
+                        className="bg-green-600/50 hover:bg-green-600/80 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        + Add Your First Asset
+                    </button>
+                </div>
             )}
         </div>
     );

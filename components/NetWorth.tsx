@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { InvestmentWithPerformance, Loan, OtherAsset } from '../types';
+import { InvestmentWithPerformance, Loan, OtherAsset } from '../types.ts';
 
 interface NetWorthProps {
     investments: InvestmentWithPerformance[];

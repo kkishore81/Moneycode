@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { OtherAsset } from '../types';
-import { Modal } from './Modal';
+import { OtherAsset } from '../types.ts';
+import { Modal } from './Modal.tsx';
 
 interface AssetModalProps {
     isOpen: boolean;

@@ -1,18 +1,20 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { User as FirebaseUser } from 'firebase/auth';
-import { Navbar, View } from './components/Navbar';
-import { Header } from './components/Header';
-import { Dashboard } from './components/Dashboard';
-import { Budget } from './components/Budget';
-import { Goals } from './components/Goals';
-import { Investments } from './components/Investments';
-import { Insurance } from './components/Insurance';
-import { Loans } from './components/Loans';
-import { Calculators } from './components/Calculators';
-import { WillCreator } from './components/WillCreator';
-import Auth from './Auth';
-import { GoogleAuthModal } from './components/GoogleAuthModal';
-import { firestoreService } from './services/firestoreService';
+import { Navbar, View } from './components/Navbar.tsx';
+import { Header } from './components/Header.tsx';
+import { Dashboard } from './components/Dashboard.tsx';
+import { Budget } from './components/Budget.tsx';
+import { Goals } from './components/Goals.tsx';
+import { Investments } from './components/Investments.tsx';
+import { Insurance } from './components/Insurance.tsx';
+import { Loans } from './components/Loans.tsx';
+import { Recurring } from './components/Recurring.tsx';
+import { Calculators } from './components/Calculators.tsx';
+import { WillCreator } from './components/WillCreator.tsx';
+import { Trends } from './components/Trends.tsx';
+import Auth from './Auth.tsx';
+import { GoogleAuthModal } from './components/GoogleAuthModal.tsx';
+import { firestoreService } from './services/firestoreService.ts';
 import {
     Transaction,
     TransactionCategory,
@@ -25,9 +27,11 @@ import {
     InvestmentWithPerformance,
     OtherAsset,
     InvestmentType,
-} from './types';
-import { calculateFdValue, calculateRdValue } from './utils/investmentCalculators';
-import { calculateXIRR } from './utils/xirr';
+    RecurringTransaction,
+    Frequency,
+} from './types.ts';
+import { calculateFdValue, calculateRdValue } from './utils/investmentCalculators.ts';
+import { calculateXIRR } from './utils/xirr.ts';
 
 const App: React.FC = () => {
     // --- AUTHENTICATION STATE ---
@@ -43,22 +47,14 @@ const App: React.FC = () => {
     const [insurancePolicies, setInsurancePolicies] = useState<InsurancePolicy[]>([]);
     const [budgets, setBudgets] = useState<Budgets>({});
     const [otherAssets, setOtherAssets] = useState<OtherAsset[]>([]);
+    const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
 
     // Bypassed Firebase Auth for Preview Environment
-    // This effect creates a mock user and loads empty data to allow the app to be previewed
-    // without requiring a live Firebase connection.
     useEffect(() => {
         const loadMockSession = async () => {
-            const mockUser: FirebaseUser = {
-                uid: 'preview-user-123',
-                email: 'preview@example.com',
-                emailVerified: true,
-                displayName: 'Preview User',
-            } as FirebaseUser;
-
+            const mockUser: FirebaseUser = { uid: 'preview-user-123', email: 'preview@example.com', emailVerified: true, displayName: 'Preview User' } as FirebaseUser;
             setUser(mockUser);
             
-            // Load initial (empty) data
             const data = await firestoreService.getUserData(mockUser.uid);
             setTransactions(data.transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
             setInvestments(data.investments);
@@ -67,16 +63,69 @@ const App: React.FC = () => {
             setInsurancePolicies(data.insurancePolicies);
             setOtherAssets(data.otherAssets);
             setBudgets(data.budgets);
+            setRecurringTransactions(data.recurringTransactions);
 
             setIsLoadingAuth(false);
         };
-
         loadMockSession();
     }, []);
+    
+    // Client-side simulation of recurring transaction generation
+    useEffect(() => {
+        if (!user || recurringTransactions.length === 0) return;
+
+        const processRecurringTransactions = async () => {
+            const today = new Date();
+            const newTransactions: Omit<Transaction, 'id'>[] = [];
+            const updatedRecurring: RecurringTransaction[] = [];
+
+            recurringTransactions.forEach(rt => {
+                let nextDueDate = new Date(rt.nextDueDate);
+                let updatedNextDate = new Date(rt.nextDueDate);
+                let hasChanges = false;
+
+                // Process all overdue transactions, capped at 12 to prevent infinite loops on old items
+                for (let i = 0; i < 12 && nextDueDate < today; i++) {
+                    newTransactions.push({
+                        date: nextDueDate.toISOString(),
+                        amount: rt.amount,
+                        description: rt.name,
+                        type: rt.type,
+                        category: rt.category,
+                        recurringTransactionId: rt.id,
+                    });
+                    
+                    if (rt.frequency === Frequency.MONTHLY) nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+                    else if (rt.frequency === Frequency.QUARTERLY) nextDueDate.setMonth(nextDueDate.getMonth() + 3);
+                    else if (rt.frequency === Frequency.YEARLY) nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+                    
+                    updatedNextDate = new Date(nextDueDate.getTime());
+                    hasChanges = true;
+                }
+                
+                if (hasChanges) {
+                    updatedRecurring.push({ ...rt, nextDueDate: updatedNextDate.toISOString() });
+                }
+            });
+            
+            if (newTransactions.length > 0) {
+                console.log(`Generating ${newTransactions.length} recurring transactions.`);
+                const tempNewTransactions: Transaction[] = newTransactions.map((t, i) => ({ ...t, id: `temp-recurring-${i}-${Date.now()}` }));
+                setTransactions(prev => [...prev, ...tempNewTransactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+                setRecurringTransactions(prev => prev.map(orig => updatedRecurring.find(upd => upd.id === orig.id) || orig));
+
+                const savePromises = newTransactions.map(t => firestoreService.saveTransaction(user.uid, t));
+                const updatePromises = updatedRecurring.map(rt => firestoreService.saveRecurringTransaction(user.uid, rt));
+                await Promise.all([...savePromises, ...updatePromises]);
+            }
+        };
+
+        const timer = setTimeout(processRecurringTransactions, 2000); 
+        return () => clearTimeout(timer);
+    }, [user]);
 
 
     const handleLogout = () => {
-        // In preview mode, logout can simply reset the state or reload the page
         setUser(null);
         window.location.reload();
     };
@@ -87,9 +136,7 @@ const App: React.FC = () => {
             const investmentTransactions = transactions.filter(
                 t => t.category === TransactionCategory.INVESTMENT && t.investmentId === inv.id
             );
-
             let totalInvested = investmentTransactions.reduce((sum, t) => sum + t.amount, 0);
-
             let currentValue = inv.currentValue;
             if (inv.type === InvestmentType.FD && inv.startDate && inv.interestRate) {
                 const principal = investmentTransactions.length > 0 ? investmentTransactions[0].amount : 0;
@@ -103,44 +150,35 @@ const App: React.FC = () => {
                  if (today.getDate() < start.getDate()) { n--; }
                  totalInvested = inv.monthlyInvestment * Math.max(0, n);
             }
-
             const pnl = currentValue - totalInvested;
             const cashFlows = investmentTransactions.map(t => ({ value: -t.amount, date: new Date(t.date) }));
-            if (currentValue > 0) {
-                cashFlows.push({ value: currentValue, date: new Date() });
-            }
+            if (currentValue > 0) { cashFlows.push({ value: currentValue, date: new Date() }); }
             cashFlows.sort((a, b) => a.date.getTime() - b.date.getTime());
             const xirr = cashFlows.length > 1 ? calculateXIRR(cashFlows.map(cf => cf.value), cashFlows.map(cf => cf.date)) : 0;
-
             return { ...inv, currentValue, totalInvested, pnl, xirr: isNaN(xirr) ? 0 : xirr };
         });
     }, [investments, transactions]);
     
     useEffect(() => {
-        setGoals(prevGoals => {
-            return prevGoals.map(goal => {
-                const linkedInvestmentsValue = investmentsWithPerformance
-                    .filter(inv => inv.goalId === goal.id)
-                    .reduce((sum, inv) => sum + inv.currentValue, 0);
-                return { ...goal, currentAmount: linkedInvestmentsValue };
-            });
-        });
+        setGoals(prevGoals => prevGoals.map(goal => {
+            const linkedInvestmentsValue = investmentsWithPerformance
+                .filter(inv => inv.goalId === goal.id)
+                .reduce((sum, inv) => sum + inv.currentValue, 0);
+            return { ...goal, currentAmount: linkedInvestmentsValue };
+        }));
     }, [investmentsWithPerformance]);
     
     // --- Helper function for optimistic UI updates ---
     const optimisticUpdate = <T extends {id: string}>(
-        setter: React.Dispatch<React.SetStateAction<T[]>>,
-        item: Omit<T, 'id'> | T
+        setter: React.Dispatch<React.SetStateAction<T[]>>, item: Omit<T, 'id'> | T
     ) => {
         if ('id' in item) {
              setter(prev => prev.map(i => i.id === item.id ? item : i));
         } else {
-            // Create a temporary ID for the new item for the key
              const tempId = `temp-${Date.now()}`;
              setter(prev => [{ ...item, id: tempId } as T, ...prev]);
         }
     };
-
 
     // --- Firestore CRUD Handlers with Optimistic Updates ---
     const handleSaveTransaction = async (transaction: Omit<Transaction, 'id'> | Transaction) => {
@@ -158,8 +196,6 @@ const App: React.FC = () => {
         if (!user) return;
         optimisticUpdate(setInvestments, investment);
         const savedId = await firestoreService.saveInvestment(user.uid, investment);
-        
-        // Add initial transaction for new FDs
         if (!('id' in investment) && investment.type === InvestmentType.FD && investment.currentValue > 0) {
             handleSaveTransaction({
                 date: investment.startDate || new Date().toISOString(), amount: investment.currentValue, description: `Initial Investment: ${investment.name}`,
@@ -225,7 +261,16 @@ const App: React.FC = () => {
         setLoans(prev => prev.filter(l => l.id !== id));
         firestoreService.deleteLoan(user.uid, id);
     }
-
+    const handleSaveRecurringTransaction = (recurring: Omit<RecurringTransaction, 'id'> | RecurringTransaction) => {
+        if (!user) return;
+        optimisticUpdate(setRecurringTransactions, recurring);
+        firestoreService.saveRecurringTransaction(user.uid, recurring);
+    }
+    const handleDeleteRecurringTransaction = (id: string) => {
+        if (!user) return;
+        setRecurringTransactions(prev => prev.filter(rt => rt.id !== id));
+        firestoreService.deleteRecurringTransaction(user.uid, id);
+    }
 
     const renderView = () => {
         switch (activeView) {
@@ -235,6 +280,8 @@ const App: React.FC = () => {
             case 'investments': return <Investments investments={investmentsWithPerformance} transactions={transactions} goals={goals} onSaveInvestment={handleSaveInvestment} onDeleteInvestment={handleDeleteInvestment} />;
             case 'insurance': return <Insurance policies={insurancePolicies} onAddPolicy={handleSavePolicy as any} onUpdatePolicy={handleSavePolicy} onDeletePolicy={handleDeletePolicy} />;
             case 'loans': return <Loans loans={loans} onSaveLoan={handleSaveLoan} onDeleteLoan={handleDeleteLoan} />;
+            case 'recurring': return <Recurring recurringTransactions={recurringTransactions} onSave={handleSaveRecurringTransaction} onDelete={handleDeleteRecurringTransaction} />;
+            case 'trends': return <Trends transactions={transactions} investments={investmentsWithPerformance} loans={loans} otherAssets={otherAssets} />;
             case 'calculators': return <Calculators />;
             case 'will-creator': return <WillCreator />;
             default: return <Dashboard transactions={transactions} investments={investmentsWithPerformance} loans={loans} otherAssets={otherAssets} onSaveAsset={handleSaveAsset} onDeleteAsset={handleDeleteAsset} onAddTransaction={handleSaveTransaction} onUpdateTransaction={handleSaveTransaction} onDeleteTransaction={handleDeleteTransaction}/>;
@@ -242,16 +289,9 @@ const App: React.FC = () => {
     };
     
     if (isLoadingAuth) {
-        return (
-            <div className="bg-gray-900 min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-400"></div>
-            </div>
-        );
+        return <div className="bg-gray-900 min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-400"></div></div>;
     }
-
     if (!user) {
-        // This view is now unlikely to be reached in preview mode but is kept as a fallback.
-        // It would be used if the mock session fails or for a real auth implementation.
         return <Auth onGoogleSignIn={() => { alert("Google Sign-In is disabled in this preview. The app will load directly into the dashboard.")}} />;
     }
 

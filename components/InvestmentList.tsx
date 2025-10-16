@@ -1,15 +1,16 @@
 import React from 'react';
-import { InvestmentWithPerformance } from '../types';
+import { InvestmentWithPerformance } from '../types.ts';
 
 interface InvestmentListProps {
     investments: InvestmentWithPerformance[];
     onEdit: (investment: InvestmentWithPerformance) => void;
     onDelete: (investmentId: string) => void;
+    onAdd: () => void;
 }
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 
-export const InvestmentList: React.FC<InvestmentListProps> = ({ investments, onEdit, onDelete }) => {
+export const InvestmentList: React.FC<InvestmentListProps> = ({ investments, onEdit, onDelete, onAdd }) => {
     return (
         <div className="bg-gray-800 rounded-2xl shadow-lg p-6">
             <h3 className="text-xl font-bold text-white mb-4">Your Investments</h3>
@@ -51,7 +52,15 @@ export const InvestmentList: React.FC<InvestmentListProps> = ({ investments, onE
                     })}
                 </div>
             ) : (
-                <p className="text-gray-400 text-center py-8">No investments to display for the selected filter.</p>
+                 <div className="text-center py-12 text-gray-400">
+                    <p className="mb-4">No investments found for the selected filter.</p>
+                    <button 
+                        onClick={onAdd}
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        + Add Your First Investment
+                    </button>
+                </div>
             )}
         </div>
     );

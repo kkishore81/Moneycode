@@ -1,3 +1,4 @@
+
 export enum TransactionType {
     INCOME = 'Income',
     EXPENSE = 'Expense',
@@ -24,7 +25,26 @@ export interface Transaction {
     type: TransactionType;
     category: TransactionCategory;
     investmentId?: string; // Link to a specific investment
+    recurringTransactionId?: string; // Link to the recurring transaction that generated it
 }
+
+export enum Frequency {
+    MONTHLY = 'Monthly',
+    QUARTERLY = 'Quarterly',
+    YEARLY = 'Yearly',
+}
+
+export interface RecurringTransaction {
+    id: string;
+    name: string;
+    amount: number;
+    type: TransactionType;
+    category: TransactionCategory;
+    frequency: Frequency;
+    startDate: string; // ISO string
+    nextDueDate: string; // ISO string
+}
+
 
 export interface FinancialSummary {
     totalBalance: number;

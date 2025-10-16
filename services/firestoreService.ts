@@ -1,6 +1,6 @@
 import { collection, doc, getDocs, setDoc, deleteDoc, DocumentData } from 'firebase/firestore';
-import { db } from '../firebase';
-import { Transaction, Investment, Goal, InsurancePolicy, Loan, OtherAsset, Budgets } from '../types';
+import { db } from '../firebase.ts';
+import { Transaction, Investment, Goal, InsurancePolicy, Loan, OtherAsset, Budgets, RecurringTransaction } from '../types.ts';
 
 // Generic function to fetch a collection for a user
 const getCollection = async <T>(userId: string, collectionName: string): Promise<T[]> => {
@@ -40,7 +40,7 @@ const deleteDocument = (userId: string, collectionName: string, docId: string) =
 export const firestoreService = {
     // Fetch all user data in one go
     getUserData: async (userId: string) => {
-        const [transactions, investments, goals, loans, insurancePolicies, otherAssets, budgets] = await Promise.all([
+        const [transactions, investments, goals, loans, insurancePolicies, otherAssets, budgets, recurringTransactions] = await Promise.all([
             getCollection<Transaction>(userId, 'transactions'),
             getCollection<Investment>(userId, 'investments'),
             getCollection<Goal>(userId, 'goals'),
@@ -48,16 +48,21 @@ export const firestoreService = {
             getCollection<InsurancePolicy>(userId, 'insurancePolicies'),
             getCollection<OtherAsset>(userId, 'otherAssets'),
             getCollection<DocumentData>(userId, 'budgets'), // Budgets are stored in a single doc
+            getCollection<RecurringTransaction>(userId, 'recurringTransactions'),
         ]);
 
         const budgetsData: Budgets = budgets.length > 0 ? (budgets[0] as Budgets) : {};
 
-        return { transactions, investments, goals, loans, insurancePolicies, otherAssets, budgets: budgetsData };
+        return { transactions, investments, goals, loans, insurancePolicies, otherAssets, budgets: budgetsData, recurringTransactions };
     },
 
     // Transaction operations
     saveTransaction: (userId: string, transaction: Omit<Transaction, 'id'> | Transaction) => saveDocument(userId, 'transactions', transaction),
     deleteTransaction: (userId: string, transactionId: string) => deleteDocument(userId, 'transactions', transactionId),
+
+    // Recurring Transaction operations
+    saveRecurringTransaction: (userId: string, transaction: Omit<RecurringTransaction, 'id'> | RecurringTransaction) => saveDocument(userId, 'recurringTransactions', transaction),
+    deleteRecurringTransaction: (userId: string, transactionId: string) => deleteDocument(userId, 'recurringTransactions', transactionId),
 
     // Investment operations
     saveInvestment: (userId: string, investment: Omit<Investment, 'id'> | Investment) => saveDocument(userId, 'investments', investment),

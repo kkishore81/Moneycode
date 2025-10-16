@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { SIPCalculator } from './calculators/SIPCalculator';
-import { LumpSumCalculator } from './calculators/LumpSumCalculator';
-import { EMICalculator } from './calculators/EMICalculator';
-import { InflationCalculator } from './calculators/InflationCalculator';
-import { FireCalculator } from './calculators/FireCalculator';
-import { SWPCalculator } from './calculators/SWPCalculator';
-import { CalculatorIcon, EMIIcon, FireIcon, InflationIcon, LumpSumIcon, SIPIcon, SWPIcon } from './calculators/icons';
+import { SIPCalculator } from './calculators/SIPCalculator.tsx';
+import { LumpSumCalculator } from './calculators/LumpSumCalculator.tsx';
+import { EMICalculator } from './calculators/EMICalculator.tsx';
+import { InflationCalculator } from './calculators/InflationCalculator.tsx';
+import { FireCalculator } from './calculators/FireCalculator.tsx';
+import { SWPCalculator } from './calculators/SWPCalculator.tsx';
+import { CalculatorIcon, EMIIcon, FireIcon, InflationIcon, LumpSumIcon, SIPIcon, SWPIcon } from './calculators/icons.tsx';
 
 type CalculatorType = 'sip' | 'lumpsum' | 'emi' | 'inflation' | 'fire' | 'swp';
 

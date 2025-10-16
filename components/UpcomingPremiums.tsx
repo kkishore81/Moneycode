@@ -1,5 +1,5 @@
 import React from 'react';
-import { InsurancePolicy } from '../types';
+import { InsurancePolicy } from '../types.ts';
 
 interface UpcomingPremiumsProps {
     policies: InsurancePolicy[];

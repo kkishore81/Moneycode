@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { CalculatorWrapper } from './CalculatorWrapper';
-import { CalculatorResultDisplay } from './CalculatorResultDisplay';
+import { CalculatorWrapper } from './CalculatorWrapper.tsx';
+import { CalculatorResultDisplay } from './CalculatorResultDisplay.tsx';
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 

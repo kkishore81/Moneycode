@@ -1,19 +1,16 @@
-
-
-
 import React, { useMemo, useState } from 'react';
-// Fix: Import DashboardWidgetSettings from types.ts to resolve module not found error.
-import { Transaction, FinancialSummary, InvestmentWithPerformance, Loan, OtherAsset, DashboardWidgetSettings } from '../types';
-import { CashFlowChart } from './CashFlowChart';
-import { ExpenseChart } from './ExpenseChart';
-import { TransactionsList } from './TransactionsList';
-import { FinancialAdvisor } from './FinancialAdvisor';
-import { TransactionModal } from './TransactionModal';
-import { CustomizeDashboardModal } from './CustomizeDashboardModal';
-import { NetWorth } from './NetWorth';
-import { OtherAssetsList } from './OtherAssetsList';
-import { AssetModal } from './AssetModal';
-import { CustomizeIcon, AddIcon } from './icons/NavigationIcons'; // Import new icons for buttons
+import { Transaction, FinancialSummary, InvestmentWithPerformance, Loan, OtherAsset, DashboardWidgetSettings } from '../types.ts';
+import { CashFlowChart } from './CashFlowChart.tsx';
+import { ExpenseChart } from './ExpenseChart.tsx';
+import { TransactionsList } from './TransactionsList.tsx';
+import { FinancialAdvisor } from './FinancialAdvisor.tsx';
+import { TransactionModal } from './TransactionModal.tsx';
+import { CustomizeDashboardModal } from './CustomizeDashboardModal.tsx';
+import { NetWorth } from './NetWorth.tsx';
+import { OtherAssetsList } from './OtherAssetsList.tsx';
+import { AssetModal } from './AssetModal.tsx';
+import { CustomizeIcon, AddIcon } from './icons/NavigationIcons.tsx';
+import { AIInsightCards } from './AIInsightCards.tsx';
 
 interface DashboardProps {
     transactions: Transaction[];
@@ -106,6 +103,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
 
             <NetWorth investments={investments} loans={loans} otherAssets={otherAssets} />
+            
+            <AIInsightCards transactions={transactions} summary={financialSummary} />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {widgetSettings.cashFlowChart && (

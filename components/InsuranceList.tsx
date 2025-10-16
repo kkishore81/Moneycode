@@ -1,13 +1,14 @@
 import React from 'react';
-import { InsurancePolicy } from '../types';
+import { InsurancePolicy } from '../types.ts';
 
 interface InsuranceListProps {
     policies: InsurancePolicy[];
     onEdit: (policy: InsurancePolicy) => void;
     onDelete: (policyId: string) => void;
+    onAdd: () => void;
 }
 
-export const InsuranceList: React.FC<InsuranceListProps> = ({ policies, onEdit, onDelete }) => {
+export const InsuranceList: React.FC<InsuranceListProps> = ({ policies, onEdit, onDelete, onAdd }) => {
 
     const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
     const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('en-IN');
@@ -51,7 +52,15 @@ export const InsuranceList: React.FC<InsuranceListProps> = ({ policies, onEdit, 
                     ))}
                 </div>
             ) : (
-                 <p className="text-gray-400 text-center py-8">No insurance policies added yet.</p>
+                <div className="text-center py-12 text-gray-400">
+                    <p className="mb-4">No insurance policies added yet.</p>
+                     <button 
+                        onClick={onAdd}
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        + Add Your First Policy
+                    </button>
+                </div>
             )}
         </div>
     );

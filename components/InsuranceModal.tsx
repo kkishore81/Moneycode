@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { InsurancePolicy, InsuranceType } from '../types';
-import { Modal } from './Modal';
+import { InsurancePolicy, InsuranceType } from '../types.ts';
+import { Modal } from './Modal.tsx';
 
 interface InsuranceModalProps {
     isOpen: boolean;

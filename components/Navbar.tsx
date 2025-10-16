@@ -6,11 +6,13 @@ import {
     InvestmentIcon,
     InsuranceIcon,
     LoanIcon,
+    RecurringIcon,
     CalculatorIcon,
-    WillIcon
-} from './icons/NavigationIcons';
+    WillIcon,
+    TrendIcon,
+} from './icons/NavigationIcons.tsx';
 
-export type View = 'dashboard' | 'budgets' | 'goals' | 'investments' | 'insurance' | 'loans' | 'calculators' | 'will-creator';
+export type View = 'dashboard' | 'budgets' | 'goals' | 'investments' | 'insurance' | 'loans' | 'recurring' | 'calculators' | 'will-creator' | 'trends';
 
 interface NavItem {
     id: View;
@@ -21,10 +23,12 @@ interface NavItem {
 const navItems: NavItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: DashboardIcon },
     { id: 'budgets', label: 'Budgets', icon: BudgetIcon },
+    { id: 'trends', label: 'Trends', icon: TrendIcon },
     { id: 'goals', label: 'Goals', icon: GoalIcon },
     { id: 'investments', label: 'Investments', icon: InvestmentIcon },
     { id: 'insurance', label: 'Insurance', icon: InsuranceIcon },
     { id: 'loans', label: 'Loans', icon: LoanIcon },
+    { id: 'recurring', label: 'Recurring', icon: RecurringIcon },
     { id: 'calculators', label: 'Calculators', icon: CalculatorIcon },
     { id: 'will-creator', label: 'Will Creator', icon: WillIcon },
 ];
@@ -39,7 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => 
         <>
             {/* Desktop Sidebar (visible on lg screens and up) */}
             <nav className="hidden lg:block bg-gray-800 rounded-2xl p-4 shadow-lg">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                     {navItems.map(item => {
                         const IconComponent = item.icon;
                         return (
@@ -62,14 +66,14 @@ export const Navbar: React.FC<NavbarProps> = ({ activeView, setActiveView }) => 
 
             {/* Mobile Bottom Tab Bar (visible on screens smaller than lg) */}
             <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-50">
-                <div className="flex justify-around items-center h-16">
+                <div className="flex justify-around items-center h-16 overflow-x-auto">
                     {navItems.map(item => {
                         const IconComponent = item.icon;
                         return (
                             <button
                                 key={item.id}
                                 onClick={() => setActiveView(item.id)}
-                                className={`flex flex-col items-center justify-center text-center transition-colors duration-200 p-2 w-full h-full ${
+                                className={`flex-shrink-0 flex flex-col items-center justify-center text-center transition-colors duration-200 p-2 w-20 h-full ${
                                     activeView === item.id ? 'text-green-400' : 'text-gray-400 hover:text-white'
                                 }`}
                             >

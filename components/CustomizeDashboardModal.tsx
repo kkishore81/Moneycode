@@ -1,7 +1,6 @@
 import React from 'react';
-import { Modal } from './Modal';
-// Fix: Import DashboardWidgetSettings from types.ts to resolve module not found error.
-import { DashboardWidgetSettings } from '../types';
+import { Modal } from './Modal.tsx';
+import { DashboardWidgetSettings } from '../types.ts';
 
 interface CustomizeDashboardModalProps {
     isOpen: boolean;

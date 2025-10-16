@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { LogoIcon } from './icons/NavigationIcons'; // Import the new LogoIcon
+import { LogoIcon } from './icons/NavigationIcons.tsx'; // Import the new LogoIcon
 
 interface HeaderProps {
     onLogout: () => void;

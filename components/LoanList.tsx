@@ -1,16 +1,17 @@
 import React from 'react';
-import { Loan } from '../types';
+import { Loan } from '../types.ts';
 
 interface LoanListProps {
     loans: Loan[];
     onEdit: (loan: Loan) => void;
     onDelete: (loanId: string) => void;
     onViewDetails: (loan: Loan) => void;
+    onAdd: () => void;
 }
 
 const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
 
-export const LoanList: React.FC<LoanListProps> = ({ loans, onEdit, onDelete, onViewDetails }) => {
+export const LoanList: React.FC<LoanListProps> = ({ loans, onEdit, onDelete, onViewDetails, onAdd }) => {
     return (
         <div className="bg-gray-800 rounded-2xl shadow-lg p-6">
             <h3 className="text-xl font-bold text-white mb-4">Your Loans</h3>
@@ -74,7 +75,15 @@ export const LoanList: React.FC<LoanListProps> = ({ loans, onEdit, onDelete, onV
                     })}
                 </div>
             ) : (
-                <p className="text-gray-400 text-center py-8">No loans added yet.</p>
+                 <div className="text-center py-12 text-gray-400">
+                    <p className="mb-4">No loans added yet.</p>
+                     <button 
+                        onClick={onAdd}
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        + Add Your First Loan
+                    </button>
+                </div>
             )}
         </div>
     );
