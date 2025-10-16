@@ -7,6 +7,7 @@ interface TransactionModalProps {
     onClose: () => void;
     onSave: (transaction: Omit<Transaction, 'id'> | Transaction) => void;
     transactionToEdit: Transaction | null;
+    defaultType?: TransactionType;
 }
 
 const initialFormState: Omit<Transaction, 'id'> = {
@@ -17,7 +18,7 @@ const initialFormState: Omit<Transaction, 'id'> = {
     category: TransactionCategory.OTHER,
 };
 
-export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, onSave, transactionToEdit }) => {
+export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onClose, onSave, transactionToEdit, defaultType }) => {
     const [formState, setFormState] = useState(initialFormState);
 
     useEffect(() => {
@@ -27,9 +28,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({ isOpen, onCl
                 date: new Date(transactionToEdit.date).toISOString().split('T')[0],
             });
         } else {
-            setFormState(initialFormState);
+            setFormState({
+                ...initialFormState,
+                type: defaultType || TransactionType.EXPENSE,
+            });
         }
-    }, [transactionToEdit, isOpen]);
+    }, [transactionToEdit, isOpen, defaultType]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;

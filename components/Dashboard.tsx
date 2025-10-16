@@ -1,6 +1,9 @@
 
+
+
 import React, { useMemo, useState } from 'react';
-import { Transaction, FinancialSummary, InvestmentWithPerformance, Loan, OtherAsset } from '../types';
+// Fix: Import DashboardWidgetSettings from types.ts to resolve module not found error.
+import { Transaction, FinancialSummary, InvestmentWithPerformance, Loan, OtherAsset, DashboardWidgetSettings } from '../types';
 import { CashFlowChart } from './CashFlowChart';
 import { ExpenseChart } from './ExpenseChart';
 import { TransactionsList } from './TransactionsList';
@@ -10,7 +13,7 @@ import { CustomizeDashboardModal } from './CustomizeDashboardModal';
 import { NetWorth } from './NetWorth';
 import { OtherAssetsList } from './OtherAssetsList';
 import { AssetModal } from './AssetModal';
-import { DashboardWidgetSettings } from '../App';
+import { CustomizeIcon, AddIcon } from './icons/NavigationIcons'; // Import new icons for buttons
 
 interface DashboardProps {
     transactions: Transaction[];
@@ -90,9 +93,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-                <div>
-                     <button onClick={() => setIsCustomizeModalOpen(true)} className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors mr-2">Customize</button>
-                    <button onClick={handleOpenAddModal} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">Add Transaction</button>
+                <div className="flex items-center gap-4">
+                     <button onClick={() => setIsCustomizeModalOpen(true)} className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                        <CustomizeIcon className="w-5 h-5" />
+                        Customize
+                     </button>
+                    <button onClick={handleOpenAddModal} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                        <AddIcon className="w-5 h-5" />
+                        Add Transaction
+                    </button>
                 </div>
             </div>
 

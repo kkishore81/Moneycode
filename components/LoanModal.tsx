@@ -19,6 +19,7 @@ const initialFormState: Omit<Loan, 'id' | 'emi'> = {
     tenure: 0,
     startDate: new Date().toISOString().split('T')[0],
     assetCurrentValue: 0,
+    status: 'Active',
 };
 
 export const LoanModal: React.FC<LoanModalProps> = ({ isOpen, onClose, onSave, loanToEdit }) => {

@@ -19,6 +19,24 @@ const ChartPlaceholder: React.FC = () => (
     </div>
 );
 
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  // Don't render label for very small slices to avoid clutter
+  if (percent < 0.05) {
+    return null;
+  }
+
+  return (
+    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={12} fontWeight="bold">
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
+
 
 export const ExpenseChart: React.FC<ExpenseChartProps> = ({ data }) => {
   const [isClient, setIsClient] = useState(false);
@@ -61,6 +79,7 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({ data }) => {
           cx="50%"
           cy="50%"
           labelLine={false}
+          label={renderCustomizedLabel}
           outerRadius={100}
           innerRadius={60}
           paddingAngle={5}

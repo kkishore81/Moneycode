@@ -3,6 +3,7 @@ import { Loan } from '../types';
 import { LoanForeclosureSimulator } from './LoanForeclosureSimulator';
 import { LoanList } from './LoanList';
 import { LoanModal } from './LoanModal';
+import { LoanDetailModal } from './LoanDetailModal';
 import { Modal } from './Modal';
 
 interface LoansProps {
@@ -15,6 +16,7 @@ export const Loans: React.FC<LoansProps> = ({ loans, onSaveLoan, onDeleteLoan })
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loanToEdit, setLoanToEdit] = useState<Loan | null>(null);
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+    const [selectedLoanForDetail, setSelectedLoanForDetail] = useState<Loan | null>(null);
 
     const handleOpenAddModal = () => {
         setLoanToEdit(null);
@@ -24,6 +26,10 @@ export const Loans: React.FC<LoansProps> = ({ loans, onSaveLoan, onDeleteLoan })
     const handleOpenEditModal = (loan: Loan) => {
         setLoanToEdit(loan);
         setIsModalOpen(true);
+    };
+    
+    const handleViewDetails = (loan: Loan) => {
+        setSelectedLoanForDetail(loan);
     };
 
     const handleCloseModal = () => {
@@ -40,6 +46,14 @@ export const Loans: React.FC<LoansProps> = ({ loans, onSaveLoan, onDeleteLoan })
         if(deleteConfirmId) {
             onDeleteLoan(deleteConfirmId);
             setDeleteConfirmId(null);
+        }
+    };
+    
+    const handleMarkAsPaid = (loanId: string) => {
+        const loanToUpdate = loans.find(l => l.id === loanId);
+        if (loanToUpdate) {
+            onSaveLoan({ ...loanToUpdate, status: 'Paid Off', outstandingAmount: 0 });
+            setSelectedLoanForDetail(null); // Close the detail modal
         }
     };
 
@@ -61,6 +75,7 @@ export const Loans: React.FC<LoansProps> = ({ loans, onSaveLoan, onDeleteLoan })
                 loans={loans}
                 onEdit={handleOpenEditModal}
                 onDelete={(id) => setDeleteConfirmId(id)}
+                onViewDetails={handleViewDetails}
             />
 
             <LoanModal 
@@ -68,6 +83,12 @@ export const Loans: React.FC<LoansProps> = ({ loans, onSaveLoan, onDeleteLoan })
                 onClose={handleCloseModal}
                 onSave={handleSave}
                 loanToEdit={loanToEdit}
+            />
+            
+            <LoanDetailModal
+                loan={selectedLoanForDetail}
+                onClose={() => setSelectedLoanForDetail(null)}
+                onMarkAsPaid={handleMarkAsPaid}
             />
 
              <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)}>

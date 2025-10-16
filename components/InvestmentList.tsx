@@ -51,7 +51,7 @@ export const InvestmentList: React.FC<InvestmentListProps> = ({ investments, onE
                     })}
                 </div>
             ) : (
-                <p className="text-gray-400 text-center py-8">No investments added yet.</p>
+                <p className="text-gray-400 text-center py-8">No investments to display for the selected filter.</p>
             )}
         </div>
     );

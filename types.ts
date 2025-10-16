@@ -83,6 +83,7 @@ export interface Loan {
     emi: number;
     startDate: string; // ISO string
     assetCurrentValue?: number; // Optional, for home/car loans
+    status?: 'Active' | 'Paid Off';
 }
 
 export interface WillPersonalInfo {
@@ -158,4 +159,19 @@ export interface OtherAsset {
     id: string;
     name: string;
     value: number;
+}
+// Fix: Add User type for authentication state.
+export interface User {
+    email: string;
+    password: string; // In a real app, this would be a hash
+    verified: boolean;
+}
+
+// Fix: Add DashboardWidgetSettings type to be shared between components.
+export interface DashboardWidgetSettings {
+    summaryCards: boolean;
+    cashFlowChart: boolean;
+    expenseChart: boolean;
+    transactionsList: boolean;
+    aiAdvisor: boolean;
 }
