@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GoogleIcon } from './components/icons.tsx';
-import { signUpWithEmail, signInWithEmail } from './services/authService.ts';
+import { supabaseAuthService } from './services/supabaseAuthService.ts';
 
 interface AuthProps {
     onGoogleSignIn: () => void;
@@ -28,26 +28,25 @@ const Auth: React.FC<AuthProps> = ({ onGoogleSignIn }) => {
                 return;
             }
             try {
-                await signUpWithEmail(email, password);
-                setMessage("Sign up successful! Please check your email to verify your account.");
-                setIsSignUp(false); // Switch to sign-in form after successful sign-up
+                await supabaseAuthService.signUpWithEmail(email, password);
+                setMessage("Sign up successful! You can now sign in.");
+                setIsSignUp(false);
             } catch (err: any) {
-                if (err.code === 'auth/email-already-in-use') {
+                if (err.message?.includes('already registered')) {
                     setError('This email is already in use. Please sign in or use a different email.');
-                } else if (err.code === 'auth/weak-password') {
+                } else if (err.message?.includes('password')) {
                     setError('Password should be at least 6 characters.');
                 } else {
                     setError(err.message || "Sign up failed. Please try again.");
                 }
             }
-        } else { // Sign In
+        } else {
             try {
-                await signInWithEmail(email, password);
-                // Parent component will handle navigation via onAuthStateChanged listener
+                await supabaseAuthService.signInWithEmail(email, password);
             } catch (err: any) {
-                if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+                if (err.message?.includes('Invalid login credentials')) {
                     setError("Invalid email or password.");
-                } else if (err.code === 'auth/user-disabled') {
+                } else if (err.message?.includes('disabled')) {
                     setError("This account has been disabled.");
                 } else {
                     setError(err.message || "Sign in failed. Please try again.");

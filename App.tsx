@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { User as FirebaseUser } from 'firebase/auth';
 import { Navbar, View } from './components/Navbar.tsx';
 import { Header } from './components/Header.tsx';
 import { Dashboard } from './components/Dashboard.tsx';
@@ -13,8 +12,8 @@ import { Calculators } from './components/Calculators.tsx';
 import { WillCreator } from './components/WillCreator.tsx';
 import { Trends } from './components/Trends.tsx';
 import Auth from './Auth.tsx';
-import { GoogleAuthModal } from './components/GoogleAuthModal.tsx';
-import { firestoreService } from './services/firestoreService.ts';
+import { supabaseService } from './services/supabaseService.ts';
+import { supabaseAuthService } from './services/supabaseAuthService.ts';
 import {
     Transaction,
     TransactionCategory,
@@ -33,11 +32,16 @@ import {
 import { calculateFdValue, calculateRdValue } from './utils/investmentCalculators.ts';
 import { calculateXIRR } from './utils/xirr.ts';
 
+interface User {
+    id: string;
+    email?: string;
+}
+
 const App: React.FC = () => {
     // --- AUTHENTICATION STATE ---
-    const [user, setUser] = useState<FirebaseUser | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-    
+
     // --- MAIN APP STATE ---
     const [activeView, setActiveView] = useState<View>('dashboard');
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -49,25 +53,32 @@ const App: React.FC = () => {
     const [otherAssets, setOtherAssets] = useState<OtherAsset[]>([]);
     const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
 
-    // Bypassed Firebase Auth for Preview Environment
     useEffect(() => {
-        const loadMockSession = async () => {
-            const mockUser: FirebaseUser = { uid: 'preview-user-123', email: 'preview@example.com', emailVerified: true, displayName: 'Preview User' } as FirebaseUser;
-            setUser(mockUser);
-            
-            const data = await firestoreService.getUserData(mockUser.uid);
-            setTransactions(data.transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-            setInvestments(data.investments);
-            setGoals(data.goals);
-            setLoans(data.loans);
-            setInsurancePolicies(data.insurancePolicies);
-            setOtherAssets(data.otherAssets);
-            setBudgets(data.budgets);
-            setRecurringTransactions(data.recurringTransactions);
+        const initializeAuth = async () => {
+            const { unsubscribe } = supabaseAuthService.onAuthStateChange(async (event, session) => {
+                if (session?.user) {
+                    const userData: User = { id: session.user.id, email: session.user.email };
+                    setUser(userData);
 
-            setIsLoadingAuth(false);
+                    const data = await supabaseService.getUserData(session.user.id);
+                    setTransactions(data.transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+                    setInvestments(data.investments);
+                    setGoals(data.goals);
+                    setLoans(data.loans);
+                    setInsurancePolicies(data.insurancePolicies);
+                    setOtherAssets(data.otherAssets);
+                    setBudgets(data.budgets);
+                    setRecurringTransactions(data.recurringTransactions);
+                } else {
+                    setUser(null);
+                }
+                setIsLoadingAuth(false);
+            });
+
+            return () => unsubscribe();
         };
-        loadMockSession();
+
+        initializeAuth();
     }, []);
     
     // Client-side simulation of recurring transaction generation
@@ -114,8 +125,8 @@ const App: React.FC = () => {
                 setTransactions(prev => [...prev, ...tempNewTransactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
                 setRecurringTransactions(prev => prev.map(orig => updatedRecurring.find(upd => upd.id === orig.id) || orig));
 
-                const savePromises = newTransactions.map(t => firestoreService.saveTransaction(user.uid, t));
-                const updatePromises = updatedRecurring.map(rt => firestoreService.saveRecurringTransaction(user.uid, rt));
+                const savePromises = newTransactions.map(t => supabaseService.saveTransaction(user.id, t));
+                const updatePromises = updatedRecurring.map(rt => supabaseService.saveRecurringTransaction(user.id, rt));
                 await Promise.all([...savePromises, ...updatePromises]);
             }
         };
@@ -125,9 +136,9 @@ const App: React.FC = () => {
     }, [user]);
 
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        await supabaseAuthService.signOut();
         setUser(null);
-        window.location.reload();
     };
 
     // --- Derived State / Data Processing ---
@@ -180,22 +191,21 @@ const App: React.FC = () => {
         }
     };
 
-    // --- Firestore CRUD Handlers with Optimistic Updates ---
     const handleSaveTransaction = async (transaction: Omit<Transaction, 'id'> | Transaction) => {
         if (!user) return;
         optimisticUpdate(setTransactions, transaction);
-        await firestoreService.saveTransaction(user.uid, transaction);
+        await supabaseService.saveTransaction(user.id, transaction);
     };
     const handleDeleteTransaction = (id: string) => {
         if (!user) return;
         setTransactions(prev => prev.filter(t => t.id !== id));
-        firestoreService.deleteTransaction(user.uid, id);
+        supabaseService.deleteTransaction(user.id, id);
     };
-    
+
     const handleSaveInvestment = async (investment: Omit<Investment, 'id'> | Investment) => {
         if (!user) return;
         optimisticUpdate(setInvestments, investment);
-        const savedId = await firestoreService.saveInvestment(user.uid, investment);
+        const savedId = await supabaseService.saveInvestment(user.id, investment);
         if (!('id' in investment) && investment.type === InvestmentType.FD && investment.currentValue > 0) {
             handleSaveTransaction({
                 date: investment.startDate || new Date().toISOString(), amount: investment.currentValue, description: `Initial Investment: ${investment.name}`,
@@ -206,70 +216,70 @@ const App: React.FC = () => {
     const handleDeleteInvestment = (id: string) => {
         if (!user) return;
         setInvestments(prev => prev.filter(inv => inv.id !== id));
-        firestoreService.deleteInvestment(user.uid, id);
+        supabaseService.deleteInvestment(user.id, id);
         transactions.filter(t => t.investmentId === id).forEach(t => handleDeleteTransaction(t.id));
     };
 
     const handleSaveAsset = (asset: Omit<OtherAsset, 'id'> | OtherAsset) => {
         if (!user) return;
         optimisticUpdate(setOtherAssets, asset);
-        firestoreService.saveAsset(user.uid, asset);
+        supabaseService.saveAsset(user.id, asset);
     }
     const handleDeleteAsset = (id: string) => {
         if (!user) return;
         setOtherAssets(prev => prev.filter(a => a.id !== id));
-        firestoreService.deleteAsset(user.uid, id);
+        supabaseService.deleteAsset(user.id, id);
     }
     const handleSetBudget = (category: TransactionCategory, amount: number) => {
         if (!user) return;
         const newBudgets = { ...budgets, [category]: amount };
         setBudgets(newBudgets);
-        firestoreService.saveBudget(user.uid, newBudgets);
+        supabaseService.saveBudget(user.id, newBudgets);
     };
     const handleResetBudgets = () => {
         if (!user) return;
         setBudgets({});
-        firestoreService.saveBudget(user.uid, {});
+        supabaseService.saveBudget(user.id, {});
     };
     const handleSaveGoal = (goal: Omit<Goal, 'id' | 'currentAmount'> | Goal) => {
         if (!user) return;
         optimisticUpdate(setGoals, goal as Goal);
-        firestoreService.saveGoal(user.uid, goal);
+        supabaseService.saveGoal(user.id, goal);
     }
     const handleDeleteGoal = (id: string) => {
         if (!user) return;
         setGoals(prev => prev.filter(g => g.id !== id));
-        firestoreService.deleteGoal(user.uid, id);
+        supabaseService.deleteGoal(user.id, id);
     }
     const handleSavePolicy = (policy: Omit<InsurancePolicy, 'id'> | InsurancePolicy) => {
         if (!user) return;
         optimisticUpdate(setInsurancePolicies, policy);
-        firestoreService.savePolicy(user.uid, policy);
+        supabaseService.savePolicy(user.id, policy);
     }
     const handleDeletePolicy = (id: string) => {
         if (!user) return;
         setInsurancePolicies(prev => prev.filter(p => p.id !== id));
-        firestoreService.deletePolicy(user.uid, id);
+        supabaseService.deletePolicy(user.id, id);
     }
     const handleSaveLoan = (loan: Omit<Loan, 'id'> | Loan) => {
         if (!user) return;
         optimisticUpdate(setLoans, loan);
-        firestoreService.saveLoan(user.uid, loan);
+        supabaseService.saveLoan(user.id, loan);
     }
     const handleDeleteLoan = (id: string) => {
         if (!user) return;
         setLoans(prev => prev.filter(l => l.id !== id));
-        firestoreService.deleteLoan(user.uid, id);
+        supabaseService.deleteLoan(user.id, id);
     }
     const handleSaveRecurringTransaction = (recurring: Omit<RecurringTransaction, 'id'> | RecurringTransaction) => {
         if (!user) return;
         optimisticUpdate(setRecurringTransactions, recurring);
-        firestoreService.saveRecurringTransaction(user.uid, recurring);
+        supabaseService.saveRecurringTransaction(user.id, recurring);
     }
     const handleDeleteRecurringTransaction = (id: string) => {
         if (!user) return;
         setRecurringTransactions(prev => prev.filter(rt => rt.id !== id));
-        firestoreService.deleteRecurringTransaction(user.uid, id);
+        supabaseService.deleteRecurringTransaction(user.id, id);
     }
 
     const renderView = () => {
